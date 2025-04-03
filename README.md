@@ -11,6 +11,47 @@ judged on? (Note that the “service” does not have to be for general users; y
 propose a system for a science problem, for example.)
 -->
 
+---
+### Value Proposition
+
+#### Status Quo
+
+In today’s healthcare settings, patients often rely on phone calls, emails, or in-person visits to get answers to routine medical questions. This process is slow, inconsistent, and dependent on the availability of clinical staff.
+
+From the **patient's perspective**, this results in:
+- Long wait times for basic answers
+- Inconvenience, especially outside office hours
+- Frustration or anxiety due to lack of timely information
+
+From the **healthcare provider's side**, this creates:
+- High volumes of low-complexity queries
+- Wasted clinical time on questions that don’t require expertise
+- Increased operational costs and reduced focus on critical patient care
+
+---
+
+#### ML System Value
+
+**MediChat** is a cloud-native medical chatbot powered by a **custom-trained large language model (LLM)** that understands and responds to common health queries in natural language. It is designed to be deployed within existing clinical portals or websites and acts as an intelligent first point of contact for patients.
+
+Instead of building a new service, MediChat enhances current healthcare operations by:
+- Reducing the manual workload for doctors and nurses
+- Providing instant, medically-informed answers to patients
+- Operating 24/7 and scaling effortlessly with demand
+
+---
+
+#### Business Metrics
+
+We will evaluate the system based on:
+- **Reduction in staff time spent** on repetitive queries (FTE hours saved per week)
+- **Patient query resolution rate** via the chatbot (i.e., % of queries fully handled without escalation)
+- **Average response time** compared to human-based triage
+- **Patient satisfaction score** (e.g., feedback ratings or NPS)
+
+--
+
+
 ### Contributors
 
 <!-- Table of contributors and their roles. 
@@ -19,13 +60,14 @@ Then, each row after that is: name of contributor, their role, and in the third 
 you will link to their contributions. If your project involves multiple repos, you will 
 link to their contributions in all repos here. -->
 
-| Name                            | Responsible for | Link to their commits in this repo |
-|---------------------------------|-----------------|------------------------------------|
-| All team members                |                 |                                    |
-| Team member 1                   |                 |                                    |
-| Team member 2                   |                 |                                    |
-| Team member 3                   |                 |                                    |
-| Team member 4 (if there is one) |                 |                                    |
+| Name                     | Responsible for                                         | Link to their commits in this repo |
+|--------------------------|---------------------------------------------------------|------------------------------------|
+| All team members         | Project idea, value proposition, system design          |                                    |
+| Raghu V Hemadri          | Model Training & Infrastructure (Units 4 & 5)           |                                    |                             
+| Tejdeep Chippa           | Model Serving & Monitoring (Units 6 & 7)                |                                    |
+| Vamsi UK Jonnakuti       | Data Pipeline (Unit 8)                                  |                                    |
+| Geetha K Guruju          | Continuous X: CI/CD, Deployment, Infra-as-Code (Unit 3) |                                    |
+
 
 
 
