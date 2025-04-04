@@ -1,133 +1,104 @@
 
-## Dr. Dialog: AI for Everyday Health Queries
+## Title of project
 
-<!-- 
-Discuss: Value proposition: Your will propose a machine learning system that can be 
-used in an existing business or service. (You should not propose a system in which 
-a new business or service would be developed around the machine learning system.) 
-Describe the value proposition for the machine learning system. What’s the (non-ML) 
-status quo used in the business or service? What business metric are you going to be 
-judged on? (Note that the “service” does not have to be for general users; you can 
-propose a system for a science problem, for example.)
--->
+Dr. Dialog: AI for Everyday Health Queries
 
----
 ### Value Proposition
 
-#### Status Quo
+#### Current Status Quo
+Traditionally, initial patient assessments and triaging are performed manually by healthcare professionals, such as nurses or general practitioners. This conventional approach often leads to:
 
-In today’s healthcare settings, patients often rely on phone calls, emails, or in-person visits to get answers to routine medical questions. This process is slow, inconsistent, and dependent on the availability of clinical staff.
+- **Extended wait times**: Patients experience delays before receiving initial advice.
+- **High operational costs**: Manual triage demands significant human resources.
+- **Variable guidance quality**: The consistency and depth of initial evaluations can vary.
 
-From the **patient's perspective**, this results in:
-- Long wait times for basic answers
-- Inconvenience, especially outside office hours
-- Frustration or anxiety due to lack of timely information
+#### Proposed ML System Advantages
+Integrating the ML system into existing healthcare or telemedicine services brings several key improvements:
 
-From the **healthcare provider's side**, this creates:
-- High volumes of low-complexity queries
-- Wasted clinical time on questions that don’t require expertise
-- Increased operational costs and reduced focus on critical patient care
+- **Efficiency and Speed**: Automated processing provides rapid, preliminary assessments based on a patient’s symptoms.
+- **Consistency and Personalization**: Leverages a vast dataset and advanced models for consistent, tailored advice.
+- **Cost-effectiveness**: Reduces reliance on manual triage, lowering operational costs.
+- **Scalability**: Handles high volumes of queries, beneficial in peak or resource-constrained scenarios.
 
----
+#### Business Metrics for Evaluation
+Success for this ML system will be measured by:
 
-#### ML System Value
+- **Response Time**: Reduction in the average time to provide a preliminary answer.
+- **Accuracy**: Precision in matching symptoms with likely conditions and suggesting appropriate next steps.
+- **Patient Satisfaction**: Improvement in satisfaction scores, reflecting relevance and quality of guidance.
+- **Operational Efficiency**: Reduction in manual triage workload and staffing costs.
 
-**MediChat** is a cloud-native medical chatbot powered by a **custom-trained large language model (LLM)** that understands and responds to common health queries in natural language. It is designed to be deployed within existing clinical portals or websites and acts as an intelligent first point of contact for patients.
-
-Instead of building a new service, MediChat enhances current healthcare operations by:
-- Reducing the manual workload for doctors and nurses
-- Providing instant, medically-informed answers to patients
-- Operating 24/7 and scaling effortlessly with demand
-
----
-
-#### Business Metrics
-
-We will evaluate the system based on:
-- **Reduction in staff time spent** on repetitive queries (FTE hours saved per week)
-- **Patient query resolution rate** via the chatbot (i.e., % of queries fully handled without escalation)
-- **Average response time** compared to human-based triage
-- **Patient satisfaction score** (e.g., feedback ratings or NPS)
-
---
-
+#### Integration with Existing Services
+The system is designed to plug into existing telemedicine or clinical support tools, enhancing current services without requiring new business models.
 
 ### Contributors
 
-<!-- Table of contributors and their roles. 
-First row: define responsibilities that are shared by the team. 
-Then, each row after that is: name of contributor, their role, and in the third column, 
-you will link to their contributions. If your project involves multiple repos, you will 
-link to their contributions in all repos here. -->
-
-| Name                     | Responsible for                                         | Link to their commits in this repo |
-|--------------------------|---------------------------------------------------------|------------------------------------|
-| All team members         | Project idea, value proposition, system design          |                                    |
-| Raghu V Hemadri          | Model Training & Infrastructure (Units 4 & 5)           |                                    |                             
-| Tejdeep Chippa           | Model Serving & Monitoring (Units 6 & 7)                |                                    |
-| Vamsi UK Jonnakuti       | Data Pipeline (Unit 8)                                  |                                    |
-| Geetha K Guruju          | Continuous X: CI/CD, Deployment, Infra-as-Code (Unit 3) |                                    |
-
-
-
+| Name                            | Responsible for                                         | Link to their commits in this repo |
+|---------------------------------|---------------------------------------------------------|------------------------------------|
+| All team members                | Project idea, value proposition, system design          |                                    |
+| Raghu V Hemadri                 | Model Training & Infrastructure (Units 4 & 5)           |                                    |
+| Tejdeep Chippa                  | Model Serving & Monitoring (Units 6 & 7)                |                                    |
+| Vamsi UK Jonnakuti              | Data Pipeline (Unit 8)                                  |                                    |
+| Geetha K Guruju                 | CI/CD, Deployment, Infra-as-Code (Unit 3)               |                                    |
 
 ### System diagram
 
-<!-- Overall digram of system. Doesn't need polish, does need to show all the pieces. 
-Must include: all the hardware, all the containers/software platforms, all the models, 
-all the data. -->
+The system includes:
+- **LLM Model (LLaMa 3.1 8B)** trained on Hugging Face medical Q&A dataset
+- **Flask API** for real-time symptom input and response
+- **Data pipeline containers** for ingestion, transformation, and logging
+- **Monitoring stack** (Prometheus + Grafana)
+- **Frontend** using Streamlit or HTML dashboard
+- **Deployment** on Chameleon Cloud or AWS with GPU-enabled VMs
+- **MLflow tracking** for experiments
 
 ### Summary of outside materials
 
-<!-- In a table, a row for each dataset, foundation model. 
-Name of data/model, conditions under which it was created (ideally with links/references), 
-conditions under which it may be used. -->
-
-|              | How it was created | Conditions of use |
-|--------------|--------------------|-------------------|
-| Data set 1   |                    |                   |
-| Data set 2   |                    |                   |
-| Base model 1 |                    |                   |
-| etc          |                    |                   |
-
+|              | How it was created                                                  | Conditions of use                        |
+|--------------|----------------------------------------------------------------------|------------------------------------------|
+| ai-medical-dataset | Curated by ruslanmv, 21.2M QA pairs on Hugging Face            | CreativeML Open RAIL-M License           |
+| MedQuAD      | NIH/NLM QA dataset                                                  | CC BY 4.0                                |
+| GPT-2        | Pretrained on WebText by OpenAI                                     | Open for research and commercial use     |
+| LLaMa 3.1 8B | Meta's open LLM fine-tuned with Ray + DDP on medical dataset        | Research use under Meta license          |
 
 ### Summary of infrastructure requirements
 
-<!-- Itemize all your anticipated requirements: What (`m1.medium` VM, `gpu_mi100`), 
-how much/when, justification. Include compute, floating IPs, persistent storage. 
-The table below shows an example, it is not a recommendation. -->
-
-| Requirement     | How many/when                                     | Justification |
-|-----------------|---------------------------------------------------|---------------|
-| `m1.medium` VMs | 3 for entire project duration                     | ...           |
-| `gpu_mi100`     | 4 hour block twice a week                         |               |
-| Floating IPs    | 1 for entire project duration, 1 for sporadic use |               |
-| etc             |                                                   |               |
+| Requirement     | How many/when                         | Justification                                         |
+|-----------------|----------------------------------------|-------------------------------------------------------|
+| `m1.medium` VMs | 2 for entire project duration          | Host backend API, frontend, monitoring stack          |
+| `gpu_a100`      | 1 node × 6 hrs/week for fine-tuning    | Train 8B parameter LLM efficiently                    |
+| Floating IPs    | 1 for entire project duration          | Public access to API and frontend                     |
+| Block storage   | 20 GB                                  | Store datasets, logs, and model checkpoints           |
+| MLflow Server   | 1 container                            | Experiment tracking and metric logging                |
 
 ### Detailed design plan
 
-<!-- In each section, you should describe (1) your strategy, (2) the relevant parts of the 
-diagram, (3) justification for your strategy, (4) relate back to lecture material, 
-(5) include specific numbers. -->
-
 #### Model training and training platforms
 
-<!-- Make sure to clarify how you will satisfy the Unit 4 and Unit 5 requirements, 
-and which optional "difficulty" points you are attempting. -->
+- **Unit 4**: Train LLaMa 3.1 8B on 21.2M QA pairs using 4×A100 GPUs with DDP/FSDP.
+- **Unit 5**: Hosted on Chameleon with MLFlow tracking and Ray Tune for hyperparameter tuning.
+- **Difficulty Points**: Distributed training (Ray Train), checkpointing, fault-tolerant infra, staging-to-production deployment pipeline.
 
 #### Model serving and monitoring platforms
 
-<!-- Make sure to clarify how you will satisfy the Unit 6 and Unit 7 requirements, 
-and which optional "difficulty" points you are attempting. -->
+- Flask-based REST API to serve real-time queries
+- Targets low-latency with concurrency and async handling
+- Optimization via FP16/quantization + graph optimization
+- Prometheus and Grafana for logs, throughput, latency, and drift
+- Benchmark GPU vs CPU inference and evaluate cost/performance trade-offs
 
 #### Data pipeline
 
-<!-- Make sure to clarify how you will satisfy the Unit 8 requirements,  and which 
-optional "difficulty" points you are attempting. -->
+- Offline pipeline for ingesting, cleaning, and storing large-scale QA data
+- Online pipeline for capturing real-time user inputs and feeding to retraining queue
+- Data versioning and monitoring using dashboards to detect drift and quality issues
+- Feedback loop for retraining and continual improvement
 
 #### Continuous X
 
-<!-- Make sure to clarify how you will satisfy the Unit 3 requirements,  and which 
-optional "difficulty" points you are attempting. -->
-
+- CI/CD setup using GitHub Actions + Docker + Terraform
+- Canary-based deployment strategy
+- Trigger-based automated retraining pipeline
+- Offline evaluation covering performance, fairness, bias, failure modes
+- Integration with MLFlow for model registry and deployment staging
 
