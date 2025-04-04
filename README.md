@@ -43,14 +43,16 @@ The system is designed to plug into existing telemedicine or clinical support to
 
 ### System diagram
 
-The system includes:
-- **LLM Model (LLaMa 3.1 8B)** trained on Hugging Face medical Q&A dataset
-- **Flask API** for real-time symptom input and response
-- **Data pipeline containers** for ingestion, transformation, and logging
-- **Monitoring stack** (Prometheus + Grafana)
-- **Frontend** using Streamlit or HTML dashboard
-- **Deployment** on Chameleon Cloud or AWS with GPU-enabled VMs
-- **MLflow tracking** for experiments
+The following diagram illustrates the architecture of our ML system, including all core components:
+
+![System Diagram](./architecture-diagram.jpeg)
+
+It includes:
+- **Data Pipeline**: ETL from offline and online sources, quality checks, and real-time dashboards.
+- **Training Infrastructure**: Distributed model training using 4×A100 GPUs, LLaMa 3.1 8B, MLflow tracking, and fault tolerance.
+- **CI/CD Pipeline**: Automates training, evaluation, and deployment using model registry triggers.
+- **Model Serving**: Flask-based API deployed on GPU instances with quantized models.
+- **Evaluation & Monitoring**: Offline fairness checks, performance dashboards, and feedback loops.
 
 ### Summary of outside materials
 
