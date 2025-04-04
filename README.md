@@ -1,7 +1,5 @@
 
-## Title of project
-
-Dr. Dialog: AI for Everyday Health Queries
+## Dr. Dialog: AI for Everyday Health Queries
 
 ### Value Proposition
 
