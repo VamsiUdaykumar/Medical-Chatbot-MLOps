@@ -1,5 +1,5 @@
 
-## Title of project
+## Dr. Dialog: AI for Everyday Health Queries
 
 <!-- 
 Discuss: Value proposition: Your will propose a machine learning system that can be 
