@@ -48,11 +48,11 @@ The following diagram illustrates the architecture of our ML system, including a
 ![System Diagram](./architecture-diagram.jpeg)
 
 It includes:
-- **Data Pipeline**: ETL from offline and online sources, quality checks, and real-time dashboards.
-- **Training Infrastructure**: Distributed model training using 4×A100 GPUs, LLaMa 3.1 8B, MLflow tracking, and fault tolerance.
-- **CI/CD Pipeline**: Automates training, evaluation, and deployment using model registry triggers.
-- **Model Serving**: Flask-based API deployed on GPU instances with quantized models.
-- **Evaluation & Monitoring**: Offline fairness checks, performance dashboards, and feedback loops.
+- **Data Pipeline**: ETL from offline and online sources, data quality checks, and storage for training input.
+- **Training Infrastructure**: Distributed model training using 4×A100 GPUs for LLaMa 3, with fault tolerance and experiment tracking.
+- **CI/CD Pipeline**: Automates training and deployment using model registry and retraining triggers.
+- **Model Serving**: Production model served via Flask API on GPU, with optional model optimization.
+- **Evaluation & Monitoring**: Load testing, canary testing, offline evaluation (bias/fairness), monitoring dashboards, and user feedback loop.
 
 ### Summary of outside materials
 
@@ -67,40 +67,35 @@ It includes:
 
 | Requirement     | How many/when                         | Justification                                         |
 |-----------------|----------------------------------------|-------------------------------------------------------|
-| `m1.medium` VMs | 2 for entire project duration          | Host backend API, frontend, monitoring stack          |
-| `gpu_a100`      | 1 node × 6 hrs/week for fine-tuning    | Train 8B parameter LLM efficiently                    |
-| Floating IPs    | 1 for entire project duration          | Public access to API and frontend                     |
-| Block storage   | 20 GB                                  | Store datasets, logs, and model checkpoints           |
-| MLflow Server   | 1 container                            | Experiment tracking and metric logging                |
+| `m1.medium` VMs | 2 for entire project duration          | Host API, dashboard, and monitoring                   |
+| `gpu_a100`      | 1 node × 6 hrs/week for fine-tuning    | Train large-scale LLM efficiently                    |
+| Floating IPs    | 1 for entire project duration          | Enable public access to services                      |
+| Block storage   | 20 GB                                  | Dataset storage, logs, model artifacts                |
+| MLflow Server   | 1 container                            | Experiment and performance tracking                   |
 
 ### Detailed design plan
 
 #### Model training and training platforms
 
-- **Unit 4**: Train LLaMa 3.1 8B on 21.2M QA pairs using 4×A100 GPUs with DDP/FSDP.
-- **Unit 5**: Hosted on Chameleon with MLFlow tracking and Ray Tune for hyperparameter tuning.
-- **Difficulty Points**: Distributed training (Ray Train), checkpointing, fault-tolerant infra, staging-to-production deployment pipeline.
+- **Unit 4**: Fine-tune LLaMa 3.1 8B using 4×A100 GPUs on medical QA dataset.
+- **Unit 5**: Use Ray for distributed training; MLFlow for experiment tracking.
+- **Extra Credit**: Fault tolerance, checkpointing, automated experiment management.
 
 #### Model serving and monitoring platforms
 
-- Flask-based REST API to serve real-time queries
-- Targets low-latency with concurrency and async handling
-- Optimization via FP16/quantization + graph optimization
-- Prometheus and Grafana for logs, throughput, latency, and drift
-- Benchmark GPU vs CPU inference and evaluate cost/performance trade-offs
+- Serve model via Flask-based API on GPU.
+- Optimize model using quantization.
+- Monitor performance (latency, throughput, drift) with Prometheus + Grafana.
+- Evaluate rollout performance using canary testing and feedback loops.
 
 #### Data pipeline
 
-- Offline pipeline for ingesting, cleaning, and storing large-scale QA data
-- Online pipeline for capturing real-time user inputs and feeding to retraining queue
-- Data versioning and monitoring using dashboards to detect drift and quality issues
-- Feedback loop for retraining and continual improvement
+- Offline and online data ingested and cleaned through ETL.
+- Store QA pairs and online symptom input in centralized storage.
+- Quality dashboard to monitor data integrity.
 
 #### Continuous X
 
-- CI/CD setup using GitHub Actions + Docker + Terraform
-- Canary-based deployment strategy
-- Trigger-based automated retraining pipeline
-- Offline evaluation covering performance, fairness, bias, failure modes
-- Integration with MLFlow for model registry and deployment staging
-
+- Automated CI/CD pipeline triggers training and deployment.
+- Canary and staging environments for controlled rollout.
+- Model registry and feedback-driven retraining pipeline.
