@@ -1,0 +1,8 @@
+flask
+torch
+transformers
+onnx
+onnxruntime
+onnxruntime-tools
+numpy
+neural_compressor
