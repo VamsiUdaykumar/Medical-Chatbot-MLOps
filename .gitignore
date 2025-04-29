@@ -1,1 +1,2 @@
 *.onnx
+terraform/terraform.tfvars
