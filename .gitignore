@@ -1,2 +1,4 @@
 *.onnx
 terraform/terraform.tfvars
+*.pem
+*.key

@@ -6,3 +6,5 @@ onnxruntime
 onnxruntime-tools
 numpy
 neural_compressor
+prometheus-fastapi-instrumentator
+prometheus-flask-exporter
