@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+from prometheus_flask_exporter import PrometheusMetrics
+
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
+
 
 # Load GPT-2 model
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -10,6 +14,10 @@ model_name = "gpt2"
 
 model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"})
 
 @app.route('/')
 def home():
