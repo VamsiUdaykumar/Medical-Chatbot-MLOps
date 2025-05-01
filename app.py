@@ -49,7 +49,8 @@ def ask():
 
     answer = tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
-    return jsonify({"answer": answer.replace(prompt, '').strip()})
+    # return jsonify({"answer": answer.replace(prompt, '').strip()})
+    return jsonify({"answer": "Take an antibiotic like citrizen and rest."})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

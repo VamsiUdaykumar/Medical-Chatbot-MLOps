@@ -36,8 +36,8 @@ The system is designed to plug into existing telemedicine or clinical support to
 | All team members                | Project idea, value proposition, system design          |                                    |
 | Raghu V Hemadri                 | Model Training & Infrastructure (Units 4 & 5)           |                                    |
 | Tejdeep Chippa                  | Model Serving & Monitoring (Units 6 & 7)                |                                    |
-| Vamsi UK Jonnakuti              | Data Pipeline (Unit 8)                                  |                                    |
-| Geetha K Guruju                 | CI/CD, Deployment, Infra-as-Code (Unit 3)               |                                    |
+| Geetha K Guruju              | Data Pipeline (Unit 8)                                  |                                    |
+| Vamsi UK Jonnakuti                | CI/CD, Deployment, Infra-as-Code (Unit 3)               |                                    |
 
 ### System diagram
 
