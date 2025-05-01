@@ -4,7 +4,7 @@ volumes:
 
 services:
   extract-data:
-    container_name: etl_extract_jsondata
+    container_name: etl_extract_arrow
     image: python:3.11
     user: root
     volumes:
@@ -17,18 +17,42 @@ services:
         set -e
         pip install datasets
 
-        echo "Downloading and converting AI Medical dataset to JSON..."
+        echo "Downloading AI Medical dataset and saving in Arrow format..."
         python3 -c '
         from datasets import load_dataset
         ds = load_dataset("ruslanmv/ai-medical-dataset")
+        ds.save_to_disk("/data/ai-medical-dataset")
+        '
+
+        echo "Extract stage complete. Contents:"
+        ls -lh /data
+
+  transform-data:
+    container_name: etl_transform_to_json
+    image: python:3.11
+    user: root
+    volumes:
+      - medicaldata:/data
+    working_dir: /data
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        pip install datasets
+
+        echo "Loading Arrow dataset and converting to JSON..."
+        python3 -c '
+        from datasets import load_from_disk
+        ds = load_from_disk("/data/ai-medical-dataset")
         ds["train"].to_json("/data/ai-medical-dataset.json")
         '
 
-        echo "Listing /data contents after extract:"
+        echo "Transform stage complete. Contents:"
         ls -lh /data
 
   load-data:
-    container_name: etl_load_jsondata
+    container_name: etl_load_json
     image: rclone/rclone:latest
     volumes:
       - medicaldata:/data
