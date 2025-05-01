@@ -1,0 +1,57 @@
+version: '3'
+volumes:
+  medicaldata:
+
+services:
+  extract-data:
+    container_name: etl_extract_medicaldata
+    image: python:3.11
+    user: root
+    volumes:
+      - medicaldata:/data
+    working_dir: /data
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        pip install datasets
+
+        echo "Downloading AI Medical dataset from HuggingFace..."
+        python3 -c '
+        from datasets import load_dataset
+        ds = load_dataset("ruslanmv/ai-medical-dataset")
+        ds.save_to_disk("/data/ai-medical-dataset")
+        '
+
+        echo "Download complete. Contents of /data:"
+        ls -l /data
+
+  load-data:
+    container_name: etl_load_medicaldata
+    image: rclone/rclone:latest
+    volumes:
+      - medicaldata:/data
+      - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        if [ -z "$RCLONE_CONTAINER" ]; then
+            echo "ERROR: RCLONE_CONTAINER is not set"
+            exit 1
+        fi
+
+        echo "Cleaning up existing contents of container..."
+        rclone delete chi_uc:$RCLONE_CONTAINER --rmdirs || true
+
+        echo "Uploading data to object store..."
+        rclone copy /data/ai-medical-dataset chi_uc:$RCLONE_CONTAINER \
+          --progress \
+          --transfers=32 \
+          --checkers=16 \
+          --multi-thread-streams=4 \
+          --fast-list
+
+        echo "Upload complete. Contents of object store:"
+        rclone lsd chi_uc:$RCLONE_CONTAINER
