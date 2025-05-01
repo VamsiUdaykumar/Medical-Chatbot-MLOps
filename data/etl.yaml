@@ -4,7 +4,7 @@ volumes:
 
 services:
   extract-data:
-    container_name: etl_extract_medicaldata
+    container_name: etl_extract_jsondata
     image: python:3.11
     user: root
     volumes:
@@ -17,18 +17,18 @@ services:
         set -e
         pip install datasets
 
-        echo "Downloading AI Medical dataset from HuggingFace..."
+        echo "Downloading and converting AI Medical dataset to JSON..."
         python3 -c '
         from datasets import load_dataset
         ds = load_dataset("ruslanmv/ai-medical-dataset")
-        ds.save_to_disk("/data/ai-medical-dataset")
+        ds["train"].to_json("/data/ai-medical-dataset.json")
         '
 
-        echo "Download complete. Contents of /data:"
-        ls -l /data
+        echo "Listing /data contents after extract:"
+        ls -lh /data
 
   load-data:
-    container_name: etl_load_medicaldata
+    container_name: etl_load_jsondata
     image: rclone/rclone:latest
     volumes:
       - medicaldata:/data
@@ -42,16 +42,9 @@ services:
             exit 1
         fi
 
-        echo "Cleaning up existing contents of container..."
-        rclone delete chi_uc:$RCLONE_CONTAINER --rmdirs || true
+        echo "Uploading JSON to object store..."
+        rclone copy /data/ai-medical-dataset.json chi_uc:$RCLONE_CONTAINER \
+          --progress
 
-        echo "Uploading data to object store..."
-        rclone copy /data/ai-medical-dataset chi_uc:$RCLONE_CONTAINER \
-          --progress \
-          --transfers=32 \
-          --checkers=16 \
-          --multi-thread-streams=4 \
-          --fast-list
-
-        echo "Upload complete. Contents of object store:"
-        rclone lsd chi_uc:$RCLONE_CONTAINER
+        echo "Upload complete. Listing files:"
+        rclone ls chi_uc:$RCLONE_CONTAINER
