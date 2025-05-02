@@ -21,6 +21,8 @@ from ray.train.torch import TorchTrainer
 from ray.train import RunConfig, ScalingConfig, CheckpointConfig, FailureConfig
 from ray.train.lightning import RayDDPStrategy, RayLightningEnvironment, prepare_trainer, RayTrainReportCallback
 from ray import train
+from ray import tune
+from ray.tune.schedulers import ASHAScheduler
 
 floating_ip = os.getenv("FLOATING_IP", "")
 
@@ -33,28 +35,12 @@ def train_func(config):
     import mlflow
 
     # Setup mlflow logging
-    # mlflow.set_tracking_uri(f"http://{floating_ip}:8000/")
-    # mlflow.set_experiment("medical-qa-tinyllama")
     mlflow_logger = MLFlowLogger(experiment_name="medical-qa-tinyllama", tracking_uri=f"http://{floating_ip}:8000")
-
-    # # Start MLflow run
-    # with mlflow.start_run():
-    #     # Log config parameters
-    #     for key, value in config.items():
-    #         mlflow.log_param(key, value)
-
-    #     # Log entire config as a JSON artifact
-    #     with open("config.json", "w") as f:
-    #         json.dump(config, f, indent=2)
-    #     mlflow.log_artifact("config.json")
 
     # Load tokenizer and dataset
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     tokenizer.pad_token = tokenizer.eos_token
 
-    # dataset = load_dataset("ruslanmv/ai-medical-dataset")
-    # train_dataset = dataset["train"].select(range(1000))
-    # val_dataset = dataset["train"].select(range(1000, 1500))
     train_dataset = load_dataset("ruslanmv/ai-medical-dataset", split="train[:500]")
     val_dataset = load_dataset("ruslanmv/ai-medical-dataset", split="train[500:750]")
 
@@ -75,7 +61,7 @@ def train_func(config):
             return {"input_ids": input_ids, "attention_mask": attention_mask, "labels": input_ids.clone()}
 
     class MedicalQADataModule(L.LightningDataModule):
-        def __init__(self, train_data, val_data, batch_size=8):
+        def __init__(self, train_data, val_data, batch_size=config["batch_size"]):
             super().__init__()
             self.train_data = train_data
             self.val_data = val_data
@@ -134,13 +120,7 @@ def train_func(config):
 
     trainer = prepare_trainer(trainer)
 
-    # 👇 Optional fault-tolerant resume
-    ckpt = train.get_checkpoint()
-    if ckpt:
-        with ckpt.as_directory() as ckpt_dir:
-            trainer.fit(model, data_module, ckpt_path=os.path.join(ckpt_dir, "checkpoint.ckpt"))
-    else:
-        trainer.fit(model, data_module)
+    trainer.fit(model, data_module)
 
     # ✅ Save final model
     merge_lora_weights(model.model)
@@ -156,26 +136,42 @@ if __name__ == "__main__":
     ray.init(address="auto")
     logging.info("Connected to Ray.")
 
+    config = {
+            "model_name": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
+            "lr": tune.uniform(5e-6, 2e-4),
+            "epochs": tune.choice([1, 2, 4]),
+            "batch_size": tune.choice([4, 8])
+        }
+
     trainer = TorchTrainer(
         train_loop_per_worker=train_func,
-        train_loop_config={
-            "model_name": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
-            "lr": 2e-4,
-            "epochs": 3,
-        },
         run_config=RunConfig(
             name="ray-medical-qa",
-            storage_path="s3://ray",
-            checkpoint_config=CheckpointConfig(num_to_keep=3),
-            failure_config=FailureConfig(max_failures=2)
+            storage_path="s3://ray"
         ),
         scaling_config=ScalingConfig(
             num_workers=1,
             use_gpu=True,
             resources_per_worker={"CPU": 8, "GPU": 1}
-        )
+        ),
+        train_loop_config=config
     )
 
     logging.info("Starting Ray training job...")
-    results = trainer.fit()
+    ### New for Ray Tune
+    def tune_asha(num_samples):
+        scheduler = ASHAScheduler(max_t=3, grace_period=1, reduction_factor=2)
+        tuner = tune.Tuner(
+            trainer,
+            param_space={"train_loop_config": config},
+            tune_config=tune.TuneConfig(
+                metric="val_loss",
+                mode="min",
+                num_samples=num_samples,
+                scheduler=scheduler,
+            ),
+        )
+        return tuner.fit()
+
+    results = tune_asha(num_samples=5)
 

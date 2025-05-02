@@ -134,9 +134,12 @@ services:
       - ray-head
 
   ray-worker-1:
-    image: rayproject/ray:2.42.1-gpu
-    container_name: ray-worker-0
-    command: ["ray", "start", "--address=ray-head:6379", "--num-cpus=32", "--num-gpus=1", "--block"]
+    build:
+      context: .  # directory where Dockerfile.jupyter-ray is located
+      dockerfile: Dockerfile.ray-worker
+    container_name: ray-worker-1
+    command: >
+      ray start --address=ray-head:6379 --num-cpus=32 --num-gpus=1 --block
     deploy:
       resources:
         reservations:
@@ -149,15 +152,26 @@ services:
       - AWS_SECRET_ACCESS_KEY=your-secret-key
       - AWS_ENDPOINT_URL=http://minio:9000
     shm_size: '12g'
-    volumes:
-      - food11:/mnt
     depends_on:
       - ray-head
+    
+  jupyter:
+    build:
+      context: .  # directory where Dockerfile.jupyter-ray is located
+      dockerfile: Dockerfile.jupyter-ray
+    container_name: jupyter-ray
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./workspace:/home/jovyan/work
+    environment:
+      - RAY_ADDRESS=http://ray-head:8265
+    depends_on:
+      - ray-head
+
 
 volumes:
   grafana_storage:
   ray_tmp:
   minio_data:
-  food11:
-    external: true  # Uses externally created volume
   postgres_data:

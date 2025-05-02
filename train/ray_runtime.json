@@ -1,7 +1,8 @@
 {
-    "pip": "requirements.txt",
+    "pip": "ray_requirements.txt",
     "env_vars": {
-        "FOOD11_DATA_DIR": "/mnt/Food-11"
+        "FOOD11_DATA_DIR": "/mnt/Food-11",
+        "FLOATING_IP": "129.114.108.211"
     },
     "excludes": ["checkpoints/"]
 }

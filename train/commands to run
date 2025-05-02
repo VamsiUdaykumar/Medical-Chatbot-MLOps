@@ -5,17 +5,8 @@ litgpt download TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T
 
 # Ray
 export HOST_IP=$(curl --silent http://169.254.169.254/latest/meta-data/public-ipv4 )
-docker compose -f docker-compose-ray.yaml up -d
+docker compose -f docker-compose-ray.yaml up --build -d
 
-docker build -t jupyter-ray -f Dockerfile.jupyter-ray .
+docker logs jupyter-ray
 
-HOST_IP=$(curl --silent http://169.254.169.254/latest/meta-data/public-ipv4 )
-docker run  -d --rm  -p 8888:8888 \
-    -v ~/mltrain-chi/workspace_ray:/home/jovyan/work/ \
-    -e RAY_ADDRESS=http://${HOST_IP}:8265/ \
-    --name jupyter \
-    jupyter-ray
-
-docker logs jupyter
-
-ray job submit --runtime-env ray_runtime.json --entrypoint-num-gpus 1 --entrypoint-num-cpus 8 --verbose  --working-dir .  -- python train.py 
+ray job submit --runtime-env ray_runtime.json  --verbose  --working-dir .  -- python train.py 
