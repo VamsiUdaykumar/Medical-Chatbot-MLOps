@@ -8,3 +8,11 @@ numpy
 neural_compressor
 prometheus-fastapi-instrumentator
 prometheus-flask-exporter
+fastapi
+uvicorn
+requests
+numpy
+pydantic
+tritonclient[all]
+tritonclient[http]
+nvidia-pyindex
