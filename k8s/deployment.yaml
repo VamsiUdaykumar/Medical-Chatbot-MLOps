@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: dr-dialog
-        image: ghcr.io/phoenix1881/dr-dialog:latest  # 🛠️ Update this
+        image: vamsiukj/medical-chatbot-mlops:latest
         ports:
         - containerPort: 5000
         resources:
