@@ -16,3 +16,9 @@ pydantic
 tritonclient[all]
 tritonclient[http]
 nvidia-pyindex
+nltk 
+rouge-score 
+evaluate 
+torch 
+transformers
+lime
