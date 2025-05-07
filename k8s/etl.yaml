@@ -33,7 +33,7 @@ services:
     user: root
     volumes:
       - medicaldata:/data
-      - ./split_medquad_filtered.py:/split_script.py
+      - ./data_preprocessing.py:/split_script.py
     working_dir: /data
     command:
       - bash
@@ -46,7 +46,7 @@ services:
         python3 /split_script.py
 
         echo "Split stage complete. Contents:"
-        ls -lh /data/medquad-split
+        ls -lh /data/data/dataset-split
 
   load-data:
     container_name: etl_load_medquad_json
@@ -64,7 +64,7 @@ services:
         fi
 
         echo "Uploading MedQuAD splits to object store..."
-        rclone copy /data/medquad-split chi_tacc:$RCLONE_CONTAINER --progress
+        rclone copy /data chi_tacc:$RCLONE_CONTAINER --progress
 
         echo "Upload complete. Listing uploaded files:"
-        rclone ls chi_uc:$RCLONE_CONTAINER
+        rclone ls chi_tacc:$RCLONE_CONTAINER
