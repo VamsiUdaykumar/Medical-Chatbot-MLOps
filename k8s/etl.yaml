@@ -4,7 +4,7 @@ volumes:
 
 services:
   extract-data:
-    container_name: etl_extract_arrow
+    container_name: etl_extract_medquad
     image: python:3.11
     user: root
     volumes:
@@ -17,42 +17,39 @@ services:
         set -e
         pip install datasets
 
-        echo "Downloading AI Medical dataset and saving in Arrow format..."
+        echo "Downloading MedQuAD dataset and saving in Arrow format..."
         python3 -c '
         from datasets import load_dataset
-        ds = load_dataset("ruslanmv/ai-medical-dataset")
-        ds.save_to_disk("/data/ai-medical-dataset")
+        ds = load_dataset("lavita/MedQuAD")
+        ds.save_to_disk("/data/medquad-raw")
         '
 
         echo "Extract stage complete. Contents:"
         ls -lh /data
 
   transform-data:
-    container_name: etl_transform_to_json
+    container_name: etl_transform_medquad_split
     image: python:3.11
     user: root
     volumes:
       - medicaldata:/data
+      - ./split_medquad_filtered.py:/split_script.py
     working_dir: /data
     command:
       - bash
       - -c
       - |
         set -e
-        pip install datasets
+        pip install datasets pandas
 
-        echo "Loading Arrow dataset and converting to JSON..."
-        python3 -c '
-        from datasets import load_from_disk
-        ds = load_from_disk("/data/ai-medical-dataset")
-        ds["train"].to_json("/data/ai-medical-dataset.json")
-        '
+        echo "Filtering and splitting MedQuAD from Arrow format..."
+        python3 /split_script.py
 
-        echo "Transform stage complete. Contents:"
-        ls -lh /data
+        echo "Split stage complete. Contents:"
+        ls -lh /data/medquad-split
 
   load-data:
-    container_name: etl_load_json
+    container_name: etl_load_medquad_json
     image: rclone/rclone:latest
     volumes:
       - medicaldata:/data
@@ -66,9 +63,8 @@ services:
             exit 1
         fi
 
-        echo "Uploading JSON to object store..."
-        rclone copy /data/ai-medical-dataset.json chi_uc:$RCLONE_CONTAINER \
-          --progress
+        echo "Uploading MedQuAD splits to object store..."
+        rclone copy /data/medquad-split chi_tacc:$RCLONE_CONTAINER --progress
 
-        echo "Upload complete. Listing files:"
+        echo "Upload complete. Listing uploaded files:"
         rclone ls chi_uc:$RCLONE_CONTAINER
