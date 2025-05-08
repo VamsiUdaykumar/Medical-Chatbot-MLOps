@@ -1,5 +1,5 @@
-output "controller_ip" {
-  value = openstack_compute_instance_v2.controller.access_ip_v4
+output "controller_floating_ip" {
+  value = openstack_networking_floatingip_v2.controller_fip.address
 }
 
 output "worker_ips" {
