@@ -1,21 +1,21 @@
-from datasets import load_dataset
+import os
+import pandas as pd
+from datasets import Dataset
 from transformers import AutoTokenizer
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset as TorchDataset, DataLoader
 import lightning as L
 import torch
 import litgpt
 from litgpt import LLM
 from litgpt.lora import GPT, merge_lora_weights
 from lightning.pytorch.strategies import DeepSpeedStrategy, FSDPStrategy, DDPStrategy
-from peft import get_peft_model, LoraConfig, TaskType
-# from lightning.pytorch.loggers import MLFlowLogger
 from pytorch_lightning.loggers.mlflow import MLFlowLogger
 import mlflow
 import mlflow.pytorch
-import os
+import boto3
+from botocore.client import Config
 import json
-
-# 🔁 New Ray imports
+import shutil
 import ray
 from ray.train.torch import TorchTrainer
 from ray.train import RunConfig, ScalingConfig, CheckpointConfig, FailureConfig
@@ -24,41 +24,27 @@ from ray import train
 
 floating_ip = os.getenv("FLOATING_IP", "")
 
-# --------------------------
-# Ray-compatible Train Function
-# --------------------------
 def train_func(config):
     print("Training with config:", config)
-
-    import mlflow
-
-    # Setup mlflow logging
-    # mlflow.set_tracking_uri(f"http://{floating_ip}:8000/")
-    # mlflow.set_experiment("medical-qa-tinyllama")
     mlflow_logger = MLFlowLogger(experiment_name="medical-qa-tinyllama", tracking_uri=f"http://{floating_ip}:8000")
 
-    # # Start MLflow run
-    # with mlflow.start_run():
-    #     # Log config parameters
-    #     for key, value in config.items():
-    #         mlflow.log_param(key, value)
-
-    #     # Log entire config as a JSON artifact
-    #     with open("config.json", "w") as f:
-    #         json.dump(config, f, indent=2)
-    #     mlflow.log_artifact("config.json")
-
-    # Load tokenizer and dataset
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     tokenizer.pad_token = tokenizer.eos_token
 
-    # dataset = load_dataset("ruslanmv/ai-medical-dataset")
-    # train_dataset = dataset["train"].select(range(1000))
-    # val_dataset = dataset["train"].select(range(1000, 1500))
-    train_dataset = load_dataset("ruslanmv/ai-medical-dataset", split="train[:500]")
-    val_dataset = load_dataset("ruslanmv/ai-medical-dataset", split="train[500:750]")
+    split_dir = os.getenv("DATA_SPLIT_ROOT", "/mnt/object/data/dataset-split")
+    train_path = os.path.join(split_dir, "training", "training.json")
+    val_path = os.path.join(split_dir, "validation", "validation.json")
+    artifact_dir = os.getenv("ARTIFACT_PATH", "/mnt/object/artifacts")
 
-    class MedicalQADataset(Dataset):
+    train_df = pd.read_json(train_path, lines=True)
+    val_df = pd.read_json(val_path, lines=True)
+
+    print(f"Loaded {len(train_df)} training samples and {len(val_df)} validation samples.")
+
+    train_dataset = Dataset.from_pandas(train_df)
+    val_dataset = Dataset.from_pandas(val_df)
+
+    class MedicalQADataset(TorchDataset):
         def __init__(self, dataset, tokenizer, max_length=512):
             self.dataset = dataset
             self.tokenizer = tokenizer
@@ -68,7 +54,7 @@ def train_func(config):
 
         def __getitem__(self, idx):
             item = self.dataset[idx]
-            prompt = f"Question: {item['question']}\nAnswer: {item['context']}"
+            prompt = f"Question: {item['question']}\nAnswer: {item['answer']}"
             encoding = self.tokenizer(prompt, truncation=True, max_length=self.max_length, padding="max_length", return_tensors="pt")
             input_ids = encoding["input_ids"].squeeze()
             attention_mask = encoding["attention_mask"].squeeze()
@@ -119,8 +105,6 @@ def train_func(config):
             return [optimizer], [scheduler]
 
     model = LitLLM()
-
-    # ⚡ Ray-compatible trainer
     trainer = L.Trainer(
         max_epochs=config["epochs"],
         accelerator="auto",
@@ -131,10 +115,8 @@ def train_func(config):
         log_every_n_steps=5,
         callbacks=[RayTrainReportCallback()],
     )
-
     trainer = prepare_trainer(trainer)
 
-    # 👇 Optional fault-tolerant resume
     ckpt = train.get_checkpoint()
     if ckpt:
         with ckpt.as_directory() as ckpt_dir:
@@ -142,32 +124,35 @@ def train_func(config):
     else:
         trainer.fit(model, data_module)
 
-    # ✅ Save final model
     merge_lora_weights(model.model)
     torch.save(model.model.state_dict(), "model.pth")
+    print(f"Model saved")
 
-# --------------------------
-# Launch with Ray
-# --------------------------
+    model_save_path = os.path.join(artifact_dir, "medical-qa-model")
+    if os.path.exists(model_save_path):
+        os.remove(os.path.join(model_save_path, "model.pth"))
+    os.makedirs(model_save_path, exist_ok=True)
+    torch.save(model.model.state_dict(), os.path.join(model_save_path, "model.pth"))
+    print(f"Model saved to {model_save_path}/model.pth")
+
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
     logging.info("Connecting to Ray...")
     ray.init(address="auto")
     logging.info("Connected to Ray.")
-
     trainer = TorchTrainer(
         train_loop_per_worker=train_func,
         train_loop_config={
             "model_name": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
             "lr": 2e-4,
-            "epochs": 3,
+            "epochs": 2,
         },
         run_config=RunConfig(
             name="ray-medical-qa",
-            storage_path="s3://ray",
-            checkpoint_config=CheckpointConfig(num_to_keep=3),
-            failure_config=FailureConfig(max_failures=2)
+            storage_path="s3://mlflow-artifacts",
+            checkpoint_config=CheckpointConfig(num_to_keep=1),
+            failure_config=FailureConfig(max_failures=1)
         ),
         scaling_config=ScalingConfig(
             num_workers=1,
@@ -175,7 +160,5 @@ if __name__ == "__main__":
             resources_per_worker={"CPU": 8, "GPU": 1}
         )
     )
-
     logging.info("Starting Ray training job...")
     results = trainer.fit()
-
