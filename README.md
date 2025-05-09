@@ -75,7 +75,7 @@ It includes:
 
 #### Model training and training platforms
 
-- **Unit 4**: Fine-tune LLaMa 3.1 8B using 4×A100 GPUs on medical QA dataset.
+- **Unit 4**: Fine-tune LLaMa 3.1 8B using 4×A100 GPUs on medical Q&A dataset.
 - **Unit 5**: Use Ray for distributed training; MLFlow for experiment tracking.
 - **Extra Credit**: Fault tolerance, checkpointing, automated experiment management.
 

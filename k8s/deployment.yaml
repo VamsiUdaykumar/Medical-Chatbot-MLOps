@@ -16,10 +16,22 @@ spec:
     spec:
       containers:
       - name: dr-dialog
-        image: ghcr.io/phoenix1881/dr-dialog:latest  # 🛠️ Update this
+        image: vamsiukj/medical-chatbot-mlops:latest
         ports:
         - containerPort: 5000
         resources:
           limits:
             memory: "2Gi"
             cpu: "1"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
