@@ -1,0 +1,23 @@
+- name: Pre-K8s config
+  hosts: all
+  become: yes
+  tasks:
+    - name: Disable host firewall
+      ansible.builtin.systemd:
+        name: ufw
+        enabled: no
+        state: stopped
+      ignore_errors: true
+
+    - name: Allow insecure local registry
+      lineinfile:
+        path: /etc/docker/daemon.json
+        create: yes
+        line: '"insecure-registries": ["127.0.0.1:5000"]'
+        insertafter: '{'
+        state: present
+
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted

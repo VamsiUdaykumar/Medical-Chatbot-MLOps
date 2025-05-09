@@ -1,0 +1,74 @@
+---
+- name: Post-Kubernetes Configuration
+  hosts: node1
+  become: true
+  tasks:
+    - name: Allow kubectl as cc user
+      copy:
+        dest: /home/cc/.kube
+        src: /root/.kube
+        remote_src: yes
+        owner: cc
+        group: cc
+        mode: '0755'
+
+    - name: Add cc to docker group
+      user:
+        name: cc
+        groups: docker
+        append: yes
+
+    - name: Install Kubernetes dashboard
+      command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+    - name: Create admin user for dashboard
+      copy:
+        dest: /home/cc/admin-user.yaml
+        content: |
+          apiVersion: v1
+          kind: ServiceAccount
+          metadata:
+            name: admin-user
+            namespace: kube-system
+          ---
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: admin-user
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: cluster-admin
+          subjects:
+          - kind: ServiceAccount
+            name: admin-user
+            namespace: kube-system
+
+    - name: Apply admin user config
+      command: kubectl apply -f /home/cc/admin-user.yaml
+
+    - name: Install ArgoCD
+      command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+    - name: Wait for ArgoCD server to be available
+      shell: |
+        until kubectl get pods -n argocd | grep argocd-server | grep Running; do
+          echo "Waiting for ArgoCD server..."
+          sleep 10
+        done
+
+    - name: Install Argo Workflows
+      command: kubectl create namespace argo --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Apply Argo Workflows controller
+      command: kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
+
+    - name: Print ArgoCD initial password
+      shell: |
+        echo "ArgoCD admin password (default):"
+        kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+
+    - name: Print Kubernetes Dashboard token
+      shell: |
+        echo "Dashboard token:"
+        kubectl -n kube-system create token admin-user
