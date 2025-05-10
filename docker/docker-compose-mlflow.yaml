@@ -13,9 +13,9 @@ services:
       MINIO_ROOT_USER: "your-access-key"
       MINIO_ROOT_PASSWORD: "your-secret-key"
     healthcheck:
-      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9000' || exit 1
-      interval: 1s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 5s
+      timeout: 5s
       retries: 5
     command: server /data --console-address ":9001"
     volumes:
@@ -31,7 +31,7 @@ services:
       mc alias set minio http://minio:9000 your-access-key your-secret-key &&
       if ! mc ls minio/mlflow-artifacts; then
         mc mb minio/mlflow-artifacts &&
-        echo 'Bucket mlflow-artifacts created'
+        echo 'Bucket mlflow-artifacts created';
       else
         echo 'Bucket mlflow-artifacts already exists';
       fi"
@@ -48,15 +48,23 @@ services:
       - "5432:5432"
     volumes:
       - /mnt/block/postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.20.2
     container_name: mlflow
     restart: always
     depends_on:
-      - minio
-      - postgres
-      - minio-create-bucket
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-create-bucket:
+        condition: service_completed_successfully
     environment:
       MLFLOW_TRACKING_URI: http://0.0.0.0:8000
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
@@ -76,14 +84,9 @@ services:
       - "8888:8888"
     shm_size: 8g
     environment:
-      - MLFLOW_TRACKING_URI=http://${HOST_IP}:8000/
+      - MLFLOW_TRACKING_URI=http://${HOST_IP:-localhost}:8000/
       - DATA_DIR=/mnt/object
     volumes:
       - ./workspace:/home/jovyan/work/
-      # - type: bind
-      #   source: /mnt/object
-      #   target: /mnt/data
-      #   read_only: true
     command: >
       bash -c "python3 -m pip install mlflow && start-notebook.sh"
-
