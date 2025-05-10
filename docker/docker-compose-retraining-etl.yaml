@@ -1,0 +1,22 @@
+services:
+  transform-retraining-data:
+    container_name: etl_transform_retraining
+    image: python:3.11
+    user: root
+    volumes:
+      - /mnt/object/data/production/retraining_data_raw:/data_raw
+      - /mnt/object/data/production/retraining_data_transformed:/data_transformed
+      - /mnt/object/data/production/production_data_archive:/data_archive
+      - ./retraining_data_transform.py:/transform_script.py
+    working_dir: /data_transformed
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        pip install pandas
+
+        echo "Running versioned retraining ETL pipeline..."
+        python3 /transform_script.py
+
+        echo "Retraining ETL complete."
