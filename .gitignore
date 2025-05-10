@@ -3,3 +3,4 @@ terraform/terraform.tfvars
 *.pem
 *.key
 .DS_Store
+.ipynb_checkpoints
