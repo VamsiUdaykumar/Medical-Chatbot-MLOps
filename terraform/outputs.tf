@@ -3,5 +3,8 @@ output "controller_floating_ip" {
 }
 
 output "worker_ips" {
-  value = [for instance in openstack_compute_instance_v2.worker : instance.access_ip_v4]
+  value = [
+    for instance in openstack_compute_instance_v2.worker :
+    instance.network[0].fixed_ip_v4
+  ]
 }

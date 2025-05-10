@@ -12,7 +12,7 @@ variable "application_credential_secret" {}
 variable "keypair_name" {}
 variable "public_key_path" {}
 variable "network_name" {
-  default = "sharednet1"
+  default = "private_net_project17"
 }
 variable "image_name" {
   default = "CC-Ubuntu24.04"
