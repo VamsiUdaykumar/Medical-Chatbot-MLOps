@@ -10,16 +10,16 @@ import plotly.io as pio
 pio.templates.default = "plotly_white"
 
 st.set_page_config(page_title="MedQA Dashboard", layout="wide")
-st.title("📊 MedQA Data Dashboard")
+st.title(" MedQA Data Dashboard")
 
 OFFLINE_DIR = "/mnt/object/data/dataset-split"
 RETRAIN_DIR = "/mnt/object/data/production/retraining_data_transformed"
 
-tab1, tab2 = st.tabs(["📂 Offline MedQuAD Data", "🔁 Retraining Data"])
+tab1, tab2 = st.tabs([" Offline MedQuAD Data", " Retraining Data"])
 
 # --- TAB 1: OFFLINE DATA ---
 with tab1:
-    st.header("📂 Offline MedQuAD Data (Cleaned)")
+    st.header(" Offline MedQuAD Data ")
 
     meta_path = os.path.join(OFFLINE_DIR, "metadata.json")
     paths = {
@@ -31,13 +31,29 @@ with tab1:
     if os.path.exists(meta_path):
         with open(meta_path) as f:
             metadata = json.load(f)
-        st.subheader("📝 Metadata Summary")
-        st.json(metadata)
+        st.subheader("Metadata Summary")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown(f"**Source:** `{metadata.get('source', '-')}`")
+            st.markdown(f"**Initial Records:** `{metadata.get('initial_records', '-')}`")
+            st.markdown(f"**Final Records:** `{metadata.get('final_records', '-')}`")
+
+        with col2:
+            split = metadata.get("split_counts", {})
+            st.markdown("**Split Counts:**")
+            st.markdown(f"- Training: `{split.get('training', '-')}`")
+            st.markdown(f"- Validation: `{split.get('validation', '-')}`")
+            st.markdown(f"- Testing: `{split.get('testing', '-')}`")
 
         dropped = metadata.get("dropped", {})
         if dropped:
+            st.markdown("**Dropped Records:**")
             drop_df = pd.DataFrame(list(dropped.items()), columns=["Type", "Count"])
-            st.markdown("### Dropped Records")
+            st.dataframe(drop_df, use_container_width=True)
+
+            st.markdown("### Dropped Record Summary")
             fig = px.bar(
                 drop_df,
                 y="Type",
@@ -49,7 +65,7 @@ with tab1:
             )
             st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("### Dataset Split Counts")
+        st.markdown("###  Dataset Split Counts")
         st.write(metadata.get("split_counts", {}))
 
         split_tabs = st.tabs(list(paths.keys()))
@@ -60,7 +76,7 @@ with tab1:
                     continue
 
                 df = pd.read_json(path, lines=True)
-                st.markdown(f"### 🔍 {label} Set Explorer")
+                st.markdown(f"###  {label} Set Explorer")
 
                 qtype_options = df["question_type"].unique()
                 selected_types = st.multiselect(f"Filter by question_type", qtype_options, key=f"{label}_qtype")
@@ -76,9 +92,9 @@ with tab1:
                 st.dataframe(filtered_df.sample(min(10, len(filtered_df))), use_container_width=True)
 
                 csv = filtered_df.to_csv(index=False).encode("utf-8")
-                st.download_button("📥 Download CSV", csv, file_name=f"{label.lower()}_filtered.csv")
+                st.download_button(" Download CSV", csv, file_name=f"{label.lower()}_filtered.csv")
 
-                st.markdown(f"### 📘 {label} - Question Type Pie Chart")
+                st.markdown(f"###  {label} - Question Type Pie Chart")
                 fig_pie = px.pie(
                     df,
                     names="question_type",
@@ -87,7 +103,7 @@ with tab1:
                 )
                 st.plotly_chart(fig_pie, use_container_width=True)
 
-                st.markdown(f"### 📏 {label} - Question Length Box & Histogram")
+                st.markdown(f"###  {label} - Question Length Box & Histogram")
                 df["question_length"] = df["question"].apply(lambda x: len(x.split()))
                 fig_box = px.box(df, y="question_length", color_discrete_sequence=["#636EFA"])
                 fig_hist = px.histogram(df, x="question_length", nbins=30, color_discrete_sequence=["#EF553B"])
@@ -98,7 +114,7 @@ with tab1:
 
 # --- TAB 2: RETRAINING DATA ---
 with tab2:
-    st.header("🔁 Retraining Data")
+    st.header(" Retraining Data")
 
     versions = sorted(
         [v for v in os.listdir(RETRAIN_DIR) if v.startswith("v") and os.path.isdir(os.path.join(RETRAIN_DIR, v))],
@@ -117,18 +133,18 @@ with tab2:
             with open(meta_path) as f:
                 meta = json.load(f)
 
-            st.subheader("📄 Metadata")
-            st.markdown(f"- **Version**: `{meta.get('version')}`")
-            st.markdown(f"- **Timestamp**: `{meta.get('timestamp')}`")
-            st.markdown(f"- **Records**: `{meta.get('record_count')}`")
+            st.subheader(" Metadata")
+            st.markdown(f"- **Version**: {meta.get('version')}")
+            st.markdown(f"- **Timestamp**: {meta.get('timestamp')}")
+            st.markdown(f"- **Records**: {meta.get('record_count')}")
 
             if meta.get("archived_files"):
-                st.markdown(f"**📁 Archived Files:**")
+                st.markdown(f"** Archived Files:**")
                 st.code("\n".join(meta["archived_files"]), language="bash")
 
             if meta.get("dropped"):
                 dropped_df = pd.DataFrame(list(meta["dropped"].items()), columns=["Type", "Count"])
-                st.markdown("### Dropped Records")
+                st.markdown("### Dropped Record Summary")
                 fig = px.bar(
                     dropped_df,
                     y="Type", x="Count", orientation="h",
@@ -143,7 +159,7 @@ with tab2:
         if os.path.exists(data_path):
             df = pd.read_json(data_path, lines=True)
 
-            st.markdown("### 📘 Question Type Distribution")
+            st.markdown("###  Question Type Distribution")
             if "question_type" in df.columns:
                 type_counts = df["question_type"].value_counts()
                 fig2 = px.pie(
@@ -157,16 +173,16 @@ with tab2:
                 present_types = set(df["question_type"].str.lower().unique())
                 missing = expected_types - present_types
                 if missing:
-                    st.warning(f"⚠️ Missing expected question types: {', '.join(missing)}")
+                    st.warning(f" Missing expected question types: {', '.join(missing)}")
 
-            st.markdown("### Question Length (Box + Histogram)")
+            st.markdown("###  Question Length (Box + Histogram)")
             df["question_length"] = df["question"].apply(lambda x: len(x.split()))
             fig_box = px.box(df, y="question_length", color_discrete_sequence=["#00CC96"])
             fig_hist = px.histogram(df, x="question_length", nbins=30, color_discrete_sequence=["#AB63FA"])
             st.plotly_chart(fig_box, use_container_width=True)
             st.plotly_chart(fig_hist, use_container_width=True)
 
-            st.markdown("### 🔍 Record Explorer")
+            st.markdown("###  Record Explorer")
             qtypes = df["question_type"].dropna().unique().tolist() if "question_type" in df.columns else []
             selected_qtypes = st.multiselect("Filter by question_type", qtypes, key="retraining_qtype")
             keyword = st.text_input("Keyword in question", key="retraining_keyword")
@@ -181,11 +197,11 @@ with tab2:
             st.dataframe(filtered_df.sample(min(10, len(filtered_df))), use_container_width=True)
 
             csv = filtered_df.to_csv(index=False).encode("utf-8")
-            st.download_button("📥 Download CSV", csv, file_name="retraining_filtered.csv")
+            st.download_button(" Download CSV", csv, file_name="retraining_filtered.csv")
         else:
             st.error("retraining_data.json not found.")
 
-    st.markdown("### 📊 Record Counts Over Time")
+    st.markdown("###  Record Counts Over Time")
     history = []
     for v in versions:
         meta_fp = os.path.join(RETRAIN_DIR, v, "metadata.json")
