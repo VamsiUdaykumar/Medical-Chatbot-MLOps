@@ -9,7 +9,7 @@ TRANSFORMED_DIR = "/data_transformed"
 ARCHIVE_DIR = "/data_archive"
 VERSION_FILE = os.path.join(TRANSFORMED_DIR, "version_tracker.txt")
 
-# Step 1: Determine next version number
+#  Determine next version number
 if os.path.exists(VERSION_FILE):
     with open(VERSION_FILE, "r") as f:
         last_version = int(f.read().strip())
@@ -33,7 +33,7 @@ versioned_archive_dir = os.path.join(ARCHIVE_DIR, version_tag)
 os.makedirs(version_dir, exist_ok=True)
 os.makedirs(versioned_archive_dir, exist_ok=True)
 
-# Step 2: Read and process raw files
+#  Read and process raw files
 records = []
 archived_files = []
 
@@ -78,19 +78,19 @@ if not records:
     print("No new valid retraining data to process.")
     exit(0)
 
-# Step 3: Clean the DataFrame
+# Clean the DataFrame
 df = pd.DataFrame(records)
 df = df.dropna(subset=["question", "answer"])
 df = df[~df["question"].str.strip().eq("")]
 df = df[~df["answer"].str.strip().eq("")]
 df = df.drop(columns=["symptoms", "timestamp"], errors="ignore")
 
-# Step 4: Save cleaned data
+# Save cleaned data
 output_path = os.path.join(version_dir, "retraining_data.json")
 df.to_json(output_path, orient="records", lines=True)
 print(f"Saved cleaned data to: {output_path}")
 
-# Step 5: Write metadata
+#  Write metadata
 metadata = {
     "version": version_tag,
     "timestamp": datetime.utcnow().isoformat() + "Z",

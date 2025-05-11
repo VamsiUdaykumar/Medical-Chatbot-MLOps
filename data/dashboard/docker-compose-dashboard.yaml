@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+    container_name: medqa-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - /mnt/object/data:/mnt/object/data:ro
+    environment:
+      - PYTHONUNBUFFERED=1

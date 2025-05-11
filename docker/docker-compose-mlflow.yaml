@@ -1,4 +1,4 @@
-name: persist_block
+name: persist_data
 services:
   minio:
     image: minio/minio

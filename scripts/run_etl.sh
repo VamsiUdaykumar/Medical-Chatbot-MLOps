@@ -23,13 +23,13 @@ echo "Setting RCLONE_CONTAINER..."
 export RCLONE_CONTAINER=object-persist-project17
 
 echo "Running extract stage..."
-docker compose -f ./etl.yaml run extract-data
+docker compose -f ./docker-compose-etl.yaml run extract-data
 
 echo "Running transform stage..."
-docker compose -f ./etl.yaml run transform-data
+docker compose -f ./docker-compose-etl.yaml run transform-data
 
 echo "Running load stage..."
-docker compose -f ./etl.yaml run load-data
+docker compose -f ./docker-compose-etl.yaml run load-data
 
 echo "Cleaning up Docker volume..."
 docker volume ls
