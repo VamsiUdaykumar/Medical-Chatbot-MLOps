@@ -87,7 +87,7 @@ We fine-tune `TinyLLaMA-1.1B` on MedQuaD using LoRA, 16-bit precision, Ray + Lig
 
 ## ⚙️ Runtime Proofs
 
-### ✅ DDP Training & LoRA Config
+### ✅ DDP Training & LoRA Config | [LoRA Config Code](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Raghu/train.py#L100-L105) | [DDP Code](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Raghu/train.py#L132-L145)
 
 | Feature | Screenshot |
 |--------|------------|
@@ -95,7 +95,7 @@ We fine-tune `TinyLLaMA-1.1B` on MedQuaD using LoRA, 16-bit precision, Ray + Lig
 
 ---
 
-### 💥 Fault Tolerance Recovery
+### 💥 Fault Tolerance Recovery | [Code Link](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Raghu/train.py#L202)
 
 | Event | Screenshot |
 |-------|------------|
@@ -104,15 +104,20 @@ We fine-tune `TinyLLaMA-1.1B` on MedQuaD using LoRA, 16-bit precision, Ray + Lig
 
 ---
 
-### Hyperparameter Tuning with Ray
+### Hyperparameter Tuning with Ray | [Code Link](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Raghu/raytune.py#L213-L227)
 ![Ray Tune](ray_tune.png)
 
 ---
 
-### Retrained base model
+### Retrained base model | [Code Link](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Raghu/retrain.py)
 ![Retrain 1](retrain_1.png)
 ![Retrain 2](reatrain_2.png)
 
+---
+
+### Training Optimizations:
+
+[Mixed Precision (AMP, 16 Bit) and Gradient Accumulation](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Raghu/train.py#L133-L134)
 
 ---
 
