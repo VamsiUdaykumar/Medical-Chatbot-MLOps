@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: dr-dialog
-        image: vamsiukj/medical-chatbot-mlops:latest
+        image: phoenix1881/medical-chatbot-mlops:latest
         ports:
         - containerPort: 5000
         resources:
