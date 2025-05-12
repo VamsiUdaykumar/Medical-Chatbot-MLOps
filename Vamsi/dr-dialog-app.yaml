@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/VamsiUdaykumar/Medical-Chatbot-MLOps
+    repoURL: https://github.com/phoenix1881/Medical-Chatbot-MLOps
     targetRevision: main   
     path: k8s              
   destination:
