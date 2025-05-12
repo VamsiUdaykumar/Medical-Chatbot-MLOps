@@ -20,7 +20,7 @@ services:
       retries: 5
     command: server /data --console-address ":9001"
     volumes:
-      - minio_data:/data  # Use a volume so minio storage persists beyond container lifetype
+      - /mnt/object/artifacts/minio_data:/data
 
   # When the minio service has started, launch a container with the minio client
   # and use it to create a bucket named mlflow-artifacts
@@ -159,6 +159,30 @@ services:
     shm_size: '12g'
     depends_on:
       - ray-head
+
+  ray-worker-2:
+    build:
+      context: .  # directory where Dockerfile.jupyter-ray is located
+      dockerfile: Dockerfile.ray-worker
+    container_name: ray-worker-2
+    command: >
+      ray start --address=ray-head:6379 --num-cpus=32 --num-gpus=1 --block
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: "nvidia"
+              capabilities: ["gpu"]
+              device_ids: ["1"]
+    volumes:
+      - /mnt/object:/mnt/object:rw
+    environment:
+      - AWS_ACCESS_KEY_ID=your-access-key     # for MinIO access
+      - AWS_SECRET_ACCESS_KEY=your-secret-key
+      - AWS_ENDPOINT_URL=http://minio:9000
+    shm_size: '12g'
+    depends_on:
+      - ray-head
     
   jupyter:
     build:
@@ -168,7 +192,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./workspace:/home/jovyan/work
+      - ./workspace:/home/jovyan/work:rw
       - /mnt/object:/mnt/object:rw
     environment:
       - RAY_ADDRESS=http://ray-head:8265
@@ -184,4 +208,3 @@ volumes:
   ray_tmp:
   postgres_data:
   workspace:
-  minio_data:

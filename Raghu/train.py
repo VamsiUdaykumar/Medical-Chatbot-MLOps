@@ -30,7 +30,7 @@ def train_func(config):
     print("Training with config:", config)
     mlflow_logger = MLFlowLogger(experiment_name="medical-qa-tinyllama", tracking_uri=f"http://{floating_ip}:8000")
 
-    use_mixed_precision = False
+    use_mixed_precision = True
     accumulate_grad_batches = 4
 
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
@@ -54,12 +54,24 @@ def train_func(config):
             self.dataset = dataset
             self.tokenizer = tokenizer
             self.max_length = max_length
+            self.prompt_template = """### Context:
+You are a helpful, accurate, and safety-aware medical assistant.
+
+### Instruction:
+Answer the following medical question with factual and reliable information.
+
+### Question:
+{question}
+
+### Answer:
+{answer}
+"""
 
         def __len__(self): return len(self.dataset)
 
         def __getitem__(self, idx):
             item = self.dataset[idx]
-            prompt = f"Question: {item['question']}\nAnswer: {item['answer']}"
+            prompt = self.prompt_template.format(question = item['question'], answer = item['answer'])
             encoding = self.tokenizer(prompt, truncation=True, max_length=self.max_length, padding="max_length", return_tensors="pt")
             input_ids = encoding["input_ids"].squeeze()
             attention_mask = encoding["attention_mask"].squeeze()
@@ -130,7 +142,7 @@ def train_func(config):
             max_epochs=config["epochs"],
             accelerator="auto",
             devices="auto",
-            strategy=DeepSpeedStrategy(),
+            strategy=RayDDPStrategy(),
             plugins=[RayLightningEnvironment()],
             logger=mlflow_logger,
             log_every_n_steps=5,
@@ -157,17 +169,17 @@ def train_func(config):
     end_time = time()
 
     merge_lora_weights(model.model)
-    torch.save(model.model.state_dict(), "model.pth")
-    print(f"Model saved")
+    # torch.save(model.model.state_dict(), "model.pth")
+    # print(f"Model saved")
 
     if trainer.global_rank == 0:
-        # model_save_path = os.path.join(artifact_dir, "medical-qa-model")
-        # if os.path.exists(os.path.join(model_save_path, "model.pth")):
-        #     os.remove(os.path.join(model_save_path, "model.pth"))
-        # os.makedirs(model_save_path, exist_ok=True)
-        # torch.save(model.model.state_dict(), os.path.join(model_save_path, "model.pth"))
-        # print(f"Model saved to {model_save_path}/model.pth")
-        # print(f"Time taken to train: {end_time - start_time} Seconds")
+        model_save_path = os.path.join(artifact_dir, "medical-qa-model")
+        if os.path.exists(os.path.join(model_save_path, "optimal_model.pth")):
+            os.remove(os.path.join(model_save_path, "optimal_model.pth"))
+        os.makedirs(model_save_path, exist_ok=True)
+        torch.save(model.model.state_dict(), os.path.join(model_save_path, "optimal_model.pth"))
+        print(f"Model saved to {model_save_path}/optimal_model.pth")
+        print(f"Time taken to train: {end_time - start_time} Seconds")
         mlflow_logger.experiment.log_param(mlflow_logger.run_id, "run_time", end_time - start_time)
         
 if __name__ == "__main__":

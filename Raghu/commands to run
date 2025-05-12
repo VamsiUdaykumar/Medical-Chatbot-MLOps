@@ -9,4 +9,43 @@ docker compose -f docker-compose-ray.yaml up --build -d
 
 docker logs jupyter-ray
 
-ray job submit --runtime-env ray_runtime.json  --verbose  --working-dir .  -- python train.py 
+ray job submit --runtime-env ray_runtime.json  --verbose  --working-dir .  -- python train_ray.py 
+
+# export YOUR_USER_ID="8de03b10560618838a5a5aa41d70525a7e1e6774ad83585ed95ba7fec043b33a"
+# export APP_CRED_ID="69bcbf00c44c4ca49bfc5796eed1c70d"
+# export APP_CRED_SECRET="9AF-RHQBdNLwbggOAoiIuA1wdbZWWhfsfWrvHGtkVbFnBwU2h86DeEvXk889albytvMxCnAl_eUQwyZ_5D1vZA"
+
+# export YOUR_USER_ID='80faa74e719af4d9b94f9792fcb80236a036e83f75b2d23667c917eda74a7179'; export APP_CRED_ID='39ebd90c5692486fa2c1820f4ece8f76'; export APP_CRED_SECRET='pxZQ3H8m6Ql4GCl8uRP1WtFIgrhJ-usuvP8l6Bi3g6RiobrWUqTLHMhqjHdANJ6x_kBR4C8DP1lHRtwFxAPzrA';
+
+export YOUR_USER_ID='d25b59d03a410639b308fc4180ae27bbdcb3eaafc746715255092b23166344ae'; export APP_CRED_ID='b927f3996058472a81c13c5f2f34d2e7'; export APP_CRED_SECRET='GiGd8lzNvcJ-m7qeZCU-5oQqDZtyhNrlMtlLdmGU07WRe76AxPDyglTj_ZKpS9P6csx3HSnDLFPQMP307QJxuw'
+
+set -e
+
+# run on node-persist
+curl https://rclone.org/install.sh | sudo bash
+
+sudo sed -i '/^#user_allow_other/s/^#//' /etc/fuse.conf
+
+mkdir -p ~/.config/rclone
+
+echo "[chi_tacc]
+type = swift
+user_id = $YOUR_USER_ID
+application_credential_id = $APP_CRED_ID
+application_credential_secret = $APP_CRED_SECRET
+auth = https://chi.tacc.chameleoncloud.org:5000/v3
+region = CHI@TACC" > ~/.config/rclone/rclone.conf
+
+rclone lsd chi_tacc:
+
+echo "Setting RCLONE_CONTAINER..."
+export RCLONE_CONTAINER=object-persist-project17
+
+echo "Mounting on local file system"
+sudo mkdir -p /mnt/object
+sudo chown -R cc /mnt/object
+sudo chgrp -R cc /mnt/object
+
+rclone mount chi_tacc:object-persist-project17 /mnt/object --allow-other --daemon
+
+ls /mnt/object

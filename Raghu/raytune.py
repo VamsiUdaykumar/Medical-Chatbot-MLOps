@@ -1,19 +1,22 @@
-from datasets import load_dataset
+import os
+import pandas as pd
+from datasets import Dataset
 from transformers import AutoTokenizer
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset as TorchDataset, DataLoader
 import lightning as L
 import torch
 import litgpt
 from litgpt import LLM
 from litgpt.lora import GPT, merge_lora_weights
 from lightning.pytorch.strategies import DeepSpeedStrategy, FSDPStrategy, DDPStrategy
-from peft import get_peft_model, LoraConfig, TaskType
-# from lightning.pytorch.loggers import MLFlowLogger
 from pytorch_lightning.loggers.mlflow import MLFlowLogger
 import mlflow
 import mlflow.pytorch
-import os
+import boto3
+from botocore.client import Config
 import json
+import shutil
+from time import time
 
 # 🔁 New Ray imports
 import ray
@@ -25,43 +28,64 @@ from ray import tune
 from ray.tune.schedulers import ASHAScheduler
 
 floating_ip = os.getenv("FLOATING_IP", "")
+num_workers = 2
 
 # --------------------------
 # Ray-compatible Train Function
 # --------------------------
 def train_func(config):
     print("Training with config:", config)
-
-    import mlflow
-
-    # Setup mlflow logging
     mlflow_logger = MLFlowLogger(experiment_name="medical-qa-tinyllama", tracking_uri=f"http://{floating_ip}:8000")
 
-    # Load tokenizer and dataset
+    use_mixed_precision = True
+    accumulate_grad_batches = 4
+
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     tokenizer.pad_token = tokenizer.eos_token
 
-    train_dataset = load_dataset("ruslanmv/ai-medical-dataset", split="train[:500]")
-    val_dataset = load_dataset("ruslanmv/ai-medical-dataset", split="train[500:750]")
+    split_dir = os.getenv("DATA_SPLIT_ROOT", "/mnt/object/data/dataset-split")
+    train_path = os.path.join(split_dir, "training", "training.json")
+    val_path = os.path.join(split_dir, "validation", "validation.json")
+    artifact_dir = os.getenv("ARTIFACT_PATH", "/mnt/object/artifacts")
 
-    class MedicalQADataset(Dataset):
+    train_df = pd.read_json(train_path, lines=True, nrows=100)
+    val_df = pd.read_json(val_path, lines=True, nrows=50)
+
+    print(f"Loaded {len(train_df)} training samples and {len(val_df)} validation samples.")
+
+    train_dataset = Dataset.from_pandas(train_df)
+    val_dataset = Dataset.from_pandas(val_df)
+
+    class MedicalQADataset(TorchDataset):
         def __init__(self, dataset, tokenizer, max_length=512):
             self.dataset = dataset
             self.tokenizer = tokenizer
             self.max_length = max_length
+            self.prompt_template = """### Context:
+You are a helpful, accurate, and safety-aware medical assistant.
+
+### Instruction:
+Answer the following medical question with factual and reliable information.
+
+### Question:
+{question}
+
+### Answer:
+{answer}
+"""
 
         def __len__(self): return len(self.dataset)
 
         def __getitem__(self, idx):
             item = self.dataset[idx]
-            prompt = f"Question: {item['question']}\nAnswer: {item['context']}"
+            prompt = self.prompt_template.format(question = item['question'], answer = item['answer'])
             encoding = self.tokenizer(prompt, truncation=True, max_length=self.max_length, padding="max_length", return_tensors="pt")
             input_ids = encoding["input_ids"].squeeze()
             attention_mask = encoding["attention_mask"].squeeze()
             return {"input_ids": input_ids, "attention_mask": attention_mask, "labels": input_ids.clone()}
 
     class MedicalQADataModule(L.LightningDataModule):
-        def __init__(self, train_data, val_data, batch_size=config["batch_size"]):
+        def __init__(self, train_data, val_data, batch_size=8):
             super().__init__()
             self.train_data = train_data
             self.val_data = val_data
@@ -104,27 +128,54 @@ def train_func(config):
             scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda step: min(1.0, step / 10))
             return [optimizer], [scheduler]
 
+    start_time = time()
     model = LitLLM()
 
-    # ⚡ Ray-compatible trainer
-    trainer = L.Trainer(
-        max_epochs=config["epochs"],
-        accelerator="auto",
-        devices="auto",
-        strategy=RayDDPStrategy(),
-        plugins=[RayLightningEnvironment()],
-        logger=mlflow_logger,
-        log_every_n_steps=5,
-        callbacks=[RayTrainReportCallback()],
-    )
-
+    if use_mixed_precision:
+        trainer = L.Trainer(
+            max_epochs=config["epochs"],
+            accelerator="auto",
+            devices="auto",
+            strategy=RayDDPStrategy(),
+            precision="16-mixed",  # Enable mixed precision
+            accumulate_grad_batches=accumulate_grad_batches,  # Gradient accumulation to simulate larger batch size
+            plugins=[RayLightningEnvironment()],
+            logger=mlflow_logger,
+            log_every_n_steps=5,
+            callbacks=[RayTrainReportCallback()],
+        )
+    else:
+        trainer = L.Trainer(
+            max_epochs=config["epochs"],
+            accelerator="auto",
+            devices="auto",
+            strategy=DeepSpeedStrategy(),
+            plugins=[RayLightningEnvironment()],
+            logger=mlflow_logger,
+            log_every_n_steps=5,
+            callbacks=[RayTrainReportCallback()],
+        )
+    
     trainer = prepare_trainer(trainer)
 
-    trainer.fit(model, data_module)
+    if trainer.global_rank == 0:
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "model_name", config["model_name"])
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "learning_rate", config["lr"])
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "epochs", config["epochs"])
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "batch_size", 8)
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "use_mixed_precision", use_mixed_precision)
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "gradient_accumulation_steps", accumulate_grad_batches)
+        mlflow_logger.experiment.log_param(mlflow_logger.run_id, "num_gpus", num_workers)
 
-    # ✅ Save final model
+    ckpt = train.get_checkpoint()
+    if ckpt:
+        with ckpt.as_directory() as ckpt_dir:
+            trainer.fit(model, data_module, ckpt_path=os.path.join(ckpt_dir, "checkpoint.ckpt"))
+    else:
+        trainer.fit(model, data_module)
+    end_time = time()
+
     merge_lora_weights(model.model)
-    torch.save(model.model.state_dict(), "model.pth")
 
 # --------------------------
 # Launch with Ray
@@ -147,10 +198,10 @@ if __name__ == "__main__":
         train_loop_per_worker=train_func,
         run_config=RunConfig(
             name="ray-medical-qa",
-            storage_path="s3://ray"
+            storage_path="s3://mlflow-artifacts"
         ),
         scaling_config=ScalingConfig(
-            num_workers=1,
+            num_workers=2,
             use_gpu=True,
             resources_per_worker={"CPU": 8, "GPU": 1}
         ),
@@ -173,5 +224,4 @@ if __name__ == "__main__":
         )
         return tuner.fit()
 
-    results = tune_asha(num_samples=5)
-
+    results = tune_asha(num_samples=3)
