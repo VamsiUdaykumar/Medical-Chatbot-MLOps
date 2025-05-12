@@ -10,7 +10,7 @@ We fine-tune `TinyLLaMA-1.1B` on MedQuaD using LoRA, 16-bit precision, Ray + Lig
 
 | **Component**        | **Detail**                                                       |
 |----------------------|------------------------------------------------------------------|
-| 💬 Use Case          | Clinical QA chatbot for Mayo Clinic digital health platforms     |
+| 💬 Use Case          | Clinical QA assistant for Mayo Clinic digital health platforms     |
 | 📥 Input             | Free-form medical question (text)                                |
 | 📤 Output            | Answer generated from the MedQuaD-trained LLM                    |
 | 🎯 Target Variable   | `"answer"` field in MedQuaD                                      |
