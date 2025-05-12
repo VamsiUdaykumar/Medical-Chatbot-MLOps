@@ -22,16 +22,18 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
     - `/mnt/object/artifacts/minio_data/` – Stores all MLflow artifacts, including metrics and model checkpoints.
     - `/mnt/object/artifacts/medical-qa-model/` – Stores only the best model checkpoints selected from training.
 
+
 - **Block Storage (KVM @ TACC)**:
 
   - Provisioned volume and mounted on `/mnt/block`.
 
   - **Service Using It**: MLflow experiment tracking stores the backend database and artifact metadata here.
 
-  - **Scripts Provided**:
+  
+- **Scripts Provided**:
     - `scripts/block_mount.sh` – Mounts the block volume.
     - `scripts/object_mount.sh` – Mounts the object store.
-    - `scripts/kvm_setup.ipynb` – Verifies persistent volume setup and integration with services.
+    - `scripts/kvm_setup.ipynb` – persistent volume setup 
 
 ---
 
@@ -129,7 +131,7 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 ## GitHub Repository Structure (My Folder)
 
 ```
-my/
+geetha/
 ├── dashboard.py
 ├── data_preprocessing.py
 ├── retraining_data_transform.py
