@@ -22,3 +22,9 @@ evaluate
 torch 
 transformers
 lime
+litgpt
+
+prometheus-client           # Histogram / Counter / /metrics endpoint
+aiofiles                    # async append to online_log.jsonl
+httpx                       # (only if you run the proxy logger)
+sentencepiece   
