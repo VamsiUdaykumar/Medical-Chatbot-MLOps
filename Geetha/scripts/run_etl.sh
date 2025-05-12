@@ -35,11 +35,4 @@ echo "Cleaning up Docker volume..."
 docker volume ls
 docker volume rm $(docker volume ls -q --filter name=medicaldata) || echo "No volume found to remove."
 
-echo "Mounting on local file system"
-sudo mkdir -p /mnt/object
-sudo chown -R cc /mnt/object
-sudo chgrp -R cc /mnt/object
-
-rclone mount chi_tacc:object-persist-project17 /mnt/object --allow-other --daemon
-
 ls /mnt/object
