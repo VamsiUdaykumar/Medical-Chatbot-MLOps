@@ -1,5 +1,5 @@
 
-# Medical Chatbot MLOps Project: README (my Contributions)
+# Medical Chatbot MLOps Project (my Contributions)
 
 This document summarizes my contributions to the Medical Chatbot MLOps project, in alignment with the course requirements.
 
@@ -60,8 +60,8 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
         - This ensures uniformity in the training samples and reduces noise
     - **Final Output**:
         - Convert the cleaned data into three logical groups:
-            - Training set (~70%) for model fitting
-            - Validation set (~10%) for tuning and early stopping
+            - Training set (~60%) for model fitting
+            - Validation set (~20%) for tuning and early stopping
             - Remaining data (~20%) reserved for future retraining or simulation
         - Stored as JSON files compatible with HuggingFace `datasets` and PyTorch DataLoader
 
@@ -74,9 +74,6 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
     - [`run_etl.sh`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/scripts/run_etl.sh)
 
 - **Tools**: Python, Docker Compose, Bash
-- **Environment Setup**:
-  - [`requirements.txt`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/requirements.txt)
-  - [`Dockerfile`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/Dockerfile)
 
 - **Data Lineage & Sample**:
   ```json
@@ -166,7 +163,7 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 - Automatically loads the latest versioned retraining dataset
 - Displays number of QA records
 - Histograms for both question and answer length
-- (Optional) Timestamp trends if available in production logs
+- Timestamp trends if available in production logs
 - Flags malformed or incomplete entries
 
 **Files**:
