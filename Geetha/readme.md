@@ -30,10 +30,11 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 
   - Provisioned volume and mounted on `/mnt/block`.
   - **Service Using It**: MLflow experiment tracking stores the backend database and artifact metadata here.
-  - **Scripts Provided**:
-    - `scripts/block_mount.sh`
-    - `scripts/object_mount.sh`
-    - `scripts/kvm_setup.ipynb`
+
+- **Scripts Provided**:
+  - `scripts/block_mount.sh`
+  - `scripts/object_mount.sh`
+  - `scripts/kvm_setup.ipynb`
 
   ![Block Storage Mounted](images/block_storage.png)
 
