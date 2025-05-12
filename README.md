@@ -52,7 +52,7 @@ The following diagram illustrates the architecture of our ML system, including a
 
 It includes:
 - **Data Pipeline**: ETL from offline and online sources, data quality checks, and storage for training input.
-- **Training Infrastructure**: Distributed model training using 4×A100 GPUs for LLaMa 3, with fault tolerance and experiment tracking.
+- **Training Infrastructure**: Distributed model training using 2×A100 GPUs for TinyLLaMa 1.1B, with fault tolerance and experiment tracking.
 - **CI/CD Pipeline**: Automates training and deployment using model registry and retraining triggers.
 - **Model Serving**: Production model served via Flask API on GPU, with optional model optimization.
 - **Evaluation & Monitoring**: Load testing, canary testing, offline evaluation (bias/fairness), monitoring dashboards, and user feedback loop.
