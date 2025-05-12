@@ -50,6 +50,21 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 
 ### My Implementation:
 
+- **Initial Training Transformations**:
+    - **Field Selection**: Retain only essential fields: `question`, `answer`, `question_type`, `question_focus`, `synonyms`
+    - **Cleaning Steps**:
+        - Remove rows with missing or empty questions/answers
+        - Normalize whitespace and trim leading/trailing spaces
+    - **Filtering**:
+        - Discard entries where `question_type` is not in the allowed set: `factoid`, `yesno`, `list`
+        - This ensures uniformity in the training samples and reduces noise
+    - **Final Output**:
+        - Convert the cleaned data into three logical groups:
+            - Training set (~70%) for model fitting
+            - Validation set (~10%) for tuning and early stopping
+            - Remaining data (~20%) reserved for future retraining or simulation
+        - Stored as JSON files compatible with HuggingFace `datasets` and PyTorch DataLoader
+
 - **Dataset Used**: `lavita/MedQuAD` from HuggingFace
 
 - **ETL Pipeline (Docker-based)**:
@@ -63,6 +78,14 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
   - [`requirements.txt`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/requirements.txt)
   - [`Dockerfile`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/Dockerfile)
 
+- **Data Lineage & Sample**:
+  ```json
+  {
+    "question": "What are the symptoms of asthma?",
+    "answer": "Asthma symptoms include shortness of breath, wheezing, and chest tightness."
+  }
+  ```
+
   ![Object Store Data View](images/object_data.png)
   ![Dataset Split Structure](images/dataset_split.png)
 
@@ -70,9 +93,15 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 
 ## Data Pipeline (Retraining)
 
-**Requirement:** Define pipeline for ingesting, cleaning, and transforming new production data for retraining.
+- **Retraining Transformations**:
+    - Parse all new `.json` logs from the `retraining_data_raw` folder
+    - Extract required fields: `question`, `model_response`
+    - Drop non-relevant fields like `symptoms`, `timestamp`, and other metadata
+    - Filter out rows where required fields are missing or malformed
+    - Combine cleaned rows into a new `retraining_data.json` under a versioned folder (e.g., `v1`, `v2`)
+    - Archive processed raw logs in the corresponding `production_data_archive/vN/` folder to prevent reprocessing
 
-### My Implementation:
+**Requirement:** Define pipeline for ingesting, cleaning, and transforming new production data for retraining.
 
 - **Directory Structure:**
 
@@ -96,15 +125,13 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 
 **Requirement:** Simulate online data streaming using real dataset to mimic real-world inference requests.
 
-### My Implementation:
-
 - **Simulation Dataset**:  
   I initially set aside **20% of the MedQuAD dataset** as unseen data, which was not used during training or validation. This subset was further divided into multiple production sets (`set1`, `set2`, etc.).
 
 - **Simulation Strategy**:
   - Each production set mimics daily usage by users in a real medical QA system.
   - I simulate patient queries arriving sequentially by iterating through the production JSON records.
-  - Each request is sent in real time (or with an artificial delay) to the FastAPI inference endpoint.
+  - Each request is sent with an artificial delay to the FastAPI inference endpoint to simulate real time data.
   - The responses are logged and synced back to the object store for retraining.
 
 - **Script**: [`simulate_online_data.py`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/simulate_online_data.py)
@@ -123,6 +150,31 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 ## Interactive Data Dashboard
 
 - **Tool**: Streamlit + Plotly
+- **Dashboard UI**: [http://129.114.25.221:8501/](http://129.114.25.221:8501/)
+- **Script**: [`dashboard.py`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/dashboard.py)
+
+### What the Dashboard Displays
+
+#### Tab 1: Offline MedQuAD Data
+- QA Pair counts for training and validation sets
+- Distribution of `question_type` using bar charts
+- Histograms of question and answer word counts
+- Metadata parsing from `metadata.json`
+- Sample viewer with randomized examples
+
+#### Tab 2: Retraining Data
+- Automatically loads the latest versioned retraining dataset
+- Displays number of QA records
+- Histograms for both question and answer length
+- (Optional) Timestamp trends if available in production logs
+- Flags malformed or incomplete entries
+
+**Files**:
+- [`docker-compose-dashboard.yaml`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/docker/docker-compose-dashboard.yaml)
+- [`requirements.txt`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/requirements.txt)
+- [`Dockerfile`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/Dockerfile)
+
+![Data Dashboard](images/data_dashboard.png)
 - **Dashboard UI**: [http://129.114.25.221:8501/](http://129.114.25.221:8501/)
 - **Files**:
   - [`dashboard.py`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/dashboard.py)
