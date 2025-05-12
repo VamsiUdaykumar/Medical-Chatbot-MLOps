@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /data
+
+# Install required tools
+RUN apt-get update && \
+    apt-get install -y curl fuse sudo unzip && \
+    curl https://rclone.org/install.sh | bash && \
+    sed -i '/^#user_allow_other/s/^#//' /etc/fuse.conf && \
+    mkdir -p /mnt/object && \
+    chown -R root:root /mnt/object
+
+# Copy the rclone init script
+COPY init_rclone.sh /usr/local/bin/init_rclone.sh
+RUN chmod +x /usr/local/bin/init_rclone.sh
+
+CMD ["bash", "/usr/local/bin/init_rclone.sh"]

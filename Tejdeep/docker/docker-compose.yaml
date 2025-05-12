@@ -1,0 +1,118 @@
+version: "3.8"
+services:
+
+
+  # triton_server:
+  #   build:
+  #     context: /home/cc/model-optim
+  #     dockerfile: docker/Dockerfile.triton
+  #   container_name: triton_server
+
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+  #   ports:
+  #     - "6000:6000"  # for HTTP requests
+  #     - "8001:8001"  # for GRPC requests
+  #     - "8002:8002"  # for reporting metrics
+
+  jupyter:
+    image: quay.io/jupyter/minimal-notebook:latest
+    container_name: jupyter
+    ports:
+      - "8888:8888"
+    networks:
+      - app-network
+    volumes:
+      - /home/cc/workspace:/home/jovyan/work:rw
+      - /mnt/object:/mnt/object:rw
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              device_ids: ["0"]
+    command: >
+      bash -c "python3 -m pip install bash_kernel tritonclient[all] && 
+               python3 -m bash_kernel.install && start-notebook.sh"
+
+
+  flask:
+    build:
+      context: /home/cc/model-optim/flask_app
+      dockerfile: Dockerfile
+    container_name: flask
+    networks:
+      - app-network
+    volumes:
+      - /mnt/object:/mnt/object:rw
+      - /home/cc/workspace:/home/cc/workspace:rw
+    user: root
+    ports:
+      - "5000:5000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              device_ids: ["0"]
+    environment:
+      - TRITON_SERVER_URL=triton_server:6000
+      - FASTAPI_SERVER_URL=http://fastapi_server:8000
+
+
+  fastapi_server:
+    build:
+      context: /home/cc/model-optim/fastapi_pt
+      dockerfile: Dockerfile
+    container_name: fastapi_server
+    networks:
+      - app-network
+    volumes:
+      - /mnt/object:/mnt/object:rw
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "8000:8000"  # for HTTP requests
+
+    # ---------- PROMETHEUS -----------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks: [app-network]
+
+  # ---------- GRAFANA ---------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on: [prometheus]
+    ports:
+      - "3000:3000"
+    networks: [app-network]
+
+
+volumes:
+  medicaleval:
+
+networks:
+  app-network:
+
