@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'chatbot_fastapi'
+    metrics_path: /metrics          # default for prometheus_client
+    static_configs:
+      - targets: ['fastapi_server:8000']

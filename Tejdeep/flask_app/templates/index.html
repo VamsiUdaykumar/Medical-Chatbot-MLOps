@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Assistant</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 12px;  /* 👈 Smaller font */
+            height: 100vh;
+        }
+
+        h2, h3 {
+            font-size: 14px;  /* Smaller section headers */
+        }
+
+        input, button {
+            font-size: 12px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-top: 0;
+        }
+
+        .highlight {
+            background-color: #cce5ff;
+            font-weight: bold;
+        }
+
+        .left-pane {
+            width: 50%;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+        }
+
+        .right-pane {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-right {
+            flex: 1;
+            padding: 20px;
+            background-color: #e6f2ff;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .bottom-right {
+            flex: 1;
+            padding: 20px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+        }
+    </style>
+
+       
+</head>
+<body>
+
+    <div class="left-pane">
+        <h2>Medical Report</h2>
+        <p><span class="highlight">Right middle lobe opacity</span> with loss of the right <span class="highlight">heart</span> border. 
+           <span class="highlight">Left lower lobe opacity</span> with loss of the left heart border. 
+           <span class="highlight">No pleural effusion</span> or <span class="highlight">pneumothorax</span>.</p>
+    </div>
+
+    <div class="right-pane">
+        <div class="top-right">
+            <h3>Term Explanations</h3>
+            <ul>
+                <li><b>Opacity:</b> Area on X-ray appearing white, possibly due to fluid or infection</li>
+                <li><b>Pleural Effusion:</b> Fluid buildup around the lungs</li>
+                <li><b>Pneumothorax:</b> Collapsed lung due to air in the chest cavity</li>
+            </ul>
+        </div>
+        <div class="bottom-right">
+            <h3>Ask a Question</h3>
+            <input id="question" placeholder="Enter your question..." />
+            <button onclick="askBot()">Ask</button>
+            <div id="response" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function askBot() {
+            const question = document.getElementById('question').value;
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = "Answer: " + data.answer;
+            });
+        }
+    </script>
+
+</body>
+</html>

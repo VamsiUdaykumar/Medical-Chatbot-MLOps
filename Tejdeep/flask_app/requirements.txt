@@ -1,0 +1,30 @@
+flask
+torch
+transformers
+onnx
+onnxruntime
+onnxruntime-tools
+numpy
+neural_compressor
+prometheus-fastapi-instrumentator
+prometheus-flask-exporter
+fastapi
+uvicorn
+requests
+numpy
+pydantic
+tritonclient[all]
+tritonclient[http]
+nvidia-pyindex
+nltk 
+rouge-score 
+evaluate 
+torch 
+transformers
+lime
+litgpt
+
+prometheus-client           # Histogram / Counter / /metrics endpoint
+aiofiles                    # async append to online_log.jsonl
+httpx                       # (only if you run the proxy logger)
+sentencepiece   
