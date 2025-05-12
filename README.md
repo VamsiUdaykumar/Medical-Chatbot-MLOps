@@ -186,5 +186,5 @@ For our use case, a conventional NLP accuracy metric like BLEU or ROUGE is less 
 
 -   **Grafana dashboards** used in docker
 
-# Training Details
+# Training Details (Raghu)
 [View detailed training results/instructions](./Raghu/README.md)
