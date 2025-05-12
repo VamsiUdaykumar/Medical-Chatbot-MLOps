@@ -97,3 +97,7 @@ It includes:
 - Automated CI/CD pipeline triggers training and deployment.
 - Canary and staging environments for controlled rollout.
 - Model registry and feedback-driven retraining pipeline.
+
+
+# Training Details
+[View detailed training results/instructions](./Raghu/README.md)
