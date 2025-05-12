@@ -65,8 +65,8 @@ with tab1:
             )
             st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("###  Dataset Split Counts")
-        st.write(metadata.get("split_counts", {}))
+        # st.markdown("###  Dataset Split Counts")
+        # st.write(metadata.get("split_counts", {}))
 
         split_tabs = st.tabs(list(paths.keys()))
         for label, path in zip(paths.keys(), paths.values()):
