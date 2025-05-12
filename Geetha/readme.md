@@ -63,14 +63,6 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
   - [`requirements.txt`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/requirements.txt)
   - [`Dockerfile`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/Dockerfile)
 
-- **Data Lineage & Sample**:
-  ```json
-  {
-    "question": "What are the symptoms of asthma?",
-    "answer": "Asthma symptoms include shortness of breath, wheezing, and chest tightness."
-  }
-  ```
-
   ![Object Store Data View](images/object_data.png)
   ![Dataset Split Structure](images/dataset_split.png)
 
