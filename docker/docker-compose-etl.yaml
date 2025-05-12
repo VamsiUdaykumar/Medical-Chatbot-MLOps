@@ -54,8 +54,8 @@ services:
     volumes:
       - medicaldata:/data
       - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
-    entrypoint: /bin/sh
-    command:
+    entrypoint:
+      - /bin/sh
       - -c
       - |
         if [ -z "$RCLONE_CONTAINER" ]; then

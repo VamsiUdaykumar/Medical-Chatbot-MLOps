@@ -1,29 +1,26 @@
-name: tracking_service
+name: persist_data
 services:
-  # MinIO object store service provides storage for artifacts, models
   minio:
     image: minio/minio
     container_name: minio
     restart: always
     expose:
       - "9000"
-    ports:  
-      - "9000:9000"  # The API for object storage is hosted on port 9000
-      - "9001:9001"  # The web-based UI is on port 9001
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: "your-access-key"
       MINIO_ROOT_PASSWORD: "your-secret-key"
     healthcheck:
-      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9000' || exit 1
-      interval: 1s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 5s
+      timeout: 5s
       retries: 5
     command: server /data --console-address ":9001"
     volumes:
-      - minio_data:/data  # Use a volume so minio storage persists beyond container lifetype
+      - /mnt/object/artifacts/minio_data:/data
 
-  # When the minio service has started, launch a container with the minio client
-  # and use it to create a bucket named mlflow-artifacts
   minio-create-bucket:
     image: minio/mc
     depends_on:
@@ -34,12 +31,11 @@ services:
       mc alias set minio http://minio:9000 your-access-key your-secret-key &&
       if ! mc ls minio/mlflow-artifacts; then
         mc mb minio/mlflow-artifacts &&
-        echo 'Bucket mlflow-artifacts creatd'
+        echo 'Bucket mlflow-artifacts created';
       else
         echo 'Bucket mlflow-artifacts already exists';
       fi"
 
-  # Postgresql server provides storage for parameters, metrics from experiment runs
   postgres:
     image: postgres:latest
     container_name: postgres
@@ -51,19 +47,27 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # use a volume so storage persists beyond container lifetype
+      - /mnt/block/postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.20.2
     container_name: mlflow
     restart: always
     depends_on:
-      - minio
-      - postgres
-      - minio-create-bucket  # make sure minio and posgres services are alive, and bucket is created, before mlflow starts
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-create-bucket:
+        condition: service_completed_successfully
     environment:
       MLFLOW_TRACKING_URI: http://0.0.0.0:8000
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000  # how mlflow will access object store
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: "your-access-key"
       AWS_SECRET_ACCESS_KEY: "your-secret-key"
     ports:
@@ -73,6 +77,16 @@ services:
       mlflow server --backend-store-uri postgresql://user:password@postgres/mlflowdb 
       --artifacts-destination s3://mlflow-artifacts/ --serve-artifacts --host 0.0.0.0 --port 8000"
 
-volumes:
-  minio_data:
-  postgres_data:
+  jupyter:
+    image: quay.io/jupyter/pytorch-notebook:pytorch-2.5.1
+    container_name: jupyter
+    ports:
+      - "8888:8888"
+    shm_size: 8g
+    environment:
+      - MLFLOW_TRACKING_URI=http://${HOST_IP:-localhost}:8000/
+      - DATA_DIR=/mnt/object
+    volumes:
+      - ./workspace:/home/jovyan/work/
+    command: >
+      bash -c "python3 -m pip install mlflow && start-notebook.sh"

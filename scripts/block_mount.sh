@@ -18,7 +18,7 @@ echo "Listing contents of $MOUNT_POINT:"
 ls "$MOUNT_POINT"
 
 # Step 4: Restart Docker services using block-volume-backed compose file
-COMPOSE_FILE="$HOME/data-persist-chi/docker/docker-compose-block.yaml"
+COMPOSE_FILE="$HOME/Medical-Chatbot-MLOps/docker/docker-compose-block.yaml"
 HOST_IP=$(curl --silent http://169.254.169.254/latest/meta-data/public-ipv4)
 
 echo "Bringing up Docker services from $COMPOSE_FILE using HOST_IP=$HOST_IP..."

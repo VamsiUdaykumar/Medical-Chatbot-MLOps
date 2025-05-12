@@ -19,22 +19,6 @@ region = CHI@TACC" > ~/.config/rclone/rclone.conf
 
 rclone lsd chi_tacc:
 
-echo "Setting RCLONE_CONTAINER..."
-export RCLONE_CONTAINER=object-persist-project17
-
-echo "Running extract stage..."
-docker compose -f ./docker-compose-etl.yaml run extract-data
-
-echo "Running transform stage..."
-docker compose -f ./docker-compose-etl.yaml run transform-data
-
-echo "Running load stage..."
-docker compose -f ./docker-compose-etl.yaml run load-data
-
-echo "Cleaning up Docker volume..."
-docker volume ls
-docker volume rm $(docker volume ls -q --filter name=medicaldata) || echo "No volume found to remove."
-
 echo "Mounting on local file system"
 sudo mkdir -p /mnt/object
 sudo chown -R cc /mnt/object
