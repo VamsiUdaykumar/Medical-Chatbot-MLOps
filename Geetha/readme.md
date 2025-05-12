@@ -1,5 +1,5 @@
 
-# Medical Chatbot MLOps Project (my Contributions)
+# Data Pipelines
 
 This document summarizes my contributions to the Medical Chatbot MLOps project, in alignment with the course requirements.
 
