@@ -98,8 +98,6 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
     - Combine cleaned rows into a new `retraining_data.json` under a versioned folder (e.g., `v1`, `v2`)
     - Archive processed raw logs in the corresponding `production_data_archive/vN/` folder to prevent reprocessing
 
-**Requirement:** Define pipeline for ingesting, cleaning, and transforming new production data for retraining.
-
 - **Directory Structure:**
 
   ```
