@@ -111,7 +111,7 @@ We fine-tune `TinyLLaMA-1.1B` on MedQuaD using LoRA, 16-bit precision, Ray + Lig
 
 ### Retrained base model
 ![Retrain 1](retrain_1.png)
-![Reatrain 2](retrain_2.png)
+![Retrain 2](reatrain_2.png)
 
 
 ---
