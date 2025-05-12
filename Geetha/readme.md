@@ -179,3 +179,29 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 
   ![Data Dashboard](images/data_dashboard.png)
 
+
+## 📁 Repository Structure: `Geetha/`
+
+```
+Geetha/
+├── dashboard.py                          # Streamlit dashboard to visualize offline and retraining QA data
+├── data_preprocessing.py                 # Offline ETL script: filters MedQuAD, cleans, splits into train/val/production
+├── retraining_data_transform.py          # Transforms and cleans production logs into versioned retraining datasets
+├── simulate_online_data.py               # Simulates real-time model usage by sending inference requests to the API
+├── version_tracker.txt                   # Tracks the latest retraining data version used in the pipeline
+├── requirements.txt                      # Python dependencies for ETL scripts and dashboard
+├── Dockerfile                            # Reusable Docker build for ETL jobs and dashboard deployment
+│
+├── docker/
+│   ├── docker-compose-etl.yaml           # Offline data ETL pipeline (extract-transform-load for MedQuAD)
+│   ├── docker-compose-retraining-etl.yaml# Compose file to run retraining ETL as a service
+│   ├── docker-compose-dashboard.yaml     # Compose service to launch the Streamlit dashboard
+│   ├── docker-compose-persistant-storage.yaml # Defines MinIO and MLflow with mounted block/object volumes
+│
+├── scripts/
+│   ├── block_mount.sh                    # Mounts and formats block storage for MLflow volume
+│   ├── object_mount.sh                   # Mounts object storage bucket for data and artifacts
+│   ├── run_etl.sh                        # Launches offline data ETL pipeline via Docker Compose
+│   ├── run_retraining_etl.sh            # Runs the retraining transformation process on new production data
+│   └── kvm_setup.ipynb                   # Jupyter notebook for provisioning and verifying KVM persistent volumes
+```
