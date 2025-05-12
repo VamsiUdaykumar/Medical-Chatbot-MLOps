@@ -22,18 +22,18 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
     - `/mnt/object/artifacts/minio_data/` – Stores all MLflow artifacts, including metrics and model checkpoints.
     - `/mnt/object/artifacts/medical-qa-model/` – Stores only the best model checkpoints selected from training.
 
-
 - **Block Storage (KVM @ TACC)**:
 
   - Provisioned volume and mounted on `/mnt/block`.
 
   - **Service Using It**: MLflow experiment tracking stores the backend database and artifact metadata here.
 
-  
-- **Scripts Provided**:
+  - **Scripts Provided**:
     - `scripts/block_mount.sh` – Mounts the block volume.
     - `scripts/object_mount.sh` – Mounts the object store.
-    - `scripts/kvm_setup.ipynb` – persistent volume setup 
+    - `scripts/kvm_setup.ipynb` – Verifies persistent volume setup and integration with services.
+
+- **MLflow UI**: [http://129.114.25.221:8000/](http://129.114.25.221:8000/)
 
 ---
 
@@ -64,7 +64,6 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
     - `requirements.txt`, `Dockerfile` – Environment setup for reproducible ETL pipeline.
 
 - **Data Lineage & Sample**:
-
   ```json
   {
     "question": "What are the symptoms of asthma?",
@@ -120,15 +119,15 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 ### My Implementation:
 
 - **Tool**: Streamlit + Plotly
-- **Live Deployment**: [http://129.114.25.221:8501/](http://129.114.25.221:8501/)
+- **Dashboard UI**: [http://129.114.25.221:8501/](http://129.114.25.221:8501/)
 - **Script**: `dashboard.py`
 - **Files**:
-  - `docker-compose-dashboard.yaml`
+  - `docker/docker-compose-dashboard.yaml`
   - `requirements.txt`, `Dockerfile`
 
 ---
 
-## GitHub Repository Structure (My Folder)
+## GitHub Repository Structure (geetha Folder)
 
 ```
 geetha/
@@ -153,4 +152,3 @@ geetha/
 │   ├── run_retraining_etl.sh
 │   └── kvm_setup.ipynb
 ```
-
