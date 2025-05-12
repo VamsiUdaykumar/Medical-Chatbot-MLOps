@@ -23,7 +23,7 @@ Vamsi/
 
 ## Infrastructure Provisioning (Terraform)
 
-> **Location**: [`provision.ipynb`](provision.ipynb)
+> **Location**: [`provision.ipynb`](./terraform/provision.ipynb)
 
 We use Terraform from a Jupyter notebook on Chameleon to provision:
 - 1 controller node (with floating IP)
