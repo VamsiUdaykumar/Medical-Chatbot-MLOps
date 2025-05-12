@@ -4,30 +4,35 @@
 ### Value Proposition
 
 #### Current Status Quo
-Traditionally, initial patient assessments and triaging are performed manually by healthcare professionals, such as nurses or general practitioners. This conventional approach often leads to:
 
-- **Extended wait times**: Patients experience delays before receiving initial advice.
-- **High operational costs**: Manual triage demands significant human resources.
-- **Variable guidance quality**: The consistency and depth of initial evaluations can vary.
+Patients accessing their health data through MyChart or the Mayo Clinic Mobile App often encounter complex medical terminology in their lab reports, imaging summaries, or physician notes. This can result in:
+
+* **Confusion and Misinterpretation**: Medical jargon is difficult for non-experts to understand.
+* **Increased support burden**: Patients frequently contact clinical staff for clarification, diverting resources from urgent care.
+* **Reduced patient empowerment**: Limited understanding of their own records hinders informed health decisions.
 
 #### Proposed ML System Advantages
-Integrating the ML system into existing healthcare or telemedicine services brings several key improvements:
 
-- **Efficiency and Speed**: Automated processing provides rapid, preliminary assessments based on a patient’s symptoms.
-- **Consistency and Personalization**: Leverages a vast dataset and advanced models for consistent, tailored advice.
-- **Cost-effectiveness**: Reduces reliance on manual triage, lowering operational costs.
-- **Scalability**: Handles high volumes of queries, beneficial in peak or resource-constrained scenarios.
+The *Report Explainer and Medical Q\&A Assistant* addresses these pain points by offering:
+
+* **Terminology Clarification**: Automatically explains complex medical terms and report sections in plain language.
+* **General Medical Q\&A**: Provides reliable, vetted answers to non-personalized medical queries.
+* **User Empowerment**: Supports patient health literacy without replacing professional advice or accessing private medical data.
+* **Operational Relief**: Reduces the volume of non-critical queries to healthcare professionals.
 
 #### Business Metrics for Evaluation
-Success for this ML system will be measured by:
 
-- **Response Time**: Reduction in the average time to provide a preliminary answer.
-- **Accuracy**: Precision in matching symptoms with likely conditions and suggesting appropriate next steps.
-- **Patient Satisfaction**: Improvement in satisfaction scores, reflecting relevance and quality of guidance.
-- **Operational Efficiency**: Reduction in manual triage workload and staffing costs.
+Impact of the assistant will be measured using:
 
-#### Integration with Existing Services
-The system is designed to plug into existing telemedicine or clinical support tools, enhancing current services without requiring new business models.
+* **User Engagement**: Increased interaction rates within MyChart and the mobile app.
+* **Support Deflection**: Reduction in routine clarifications routed to clinical staff.
+* **Patient Understanding**: Improved health literacy scores through feedback or survey mechanisms.
+* **Time to Clarity**: Decrease in time taken by users to understand medical reports.
+
+#### Integration with Mayo Clinic Digital Services
+
+This module can be embedded seamlessly into MyChart and the Mayo Clinic App as a non-intrusive, assistive layer. It complements existing functionalities by helping patients better understand their health information, without accessing or processing private patient data. Over time, this assistant can evolve as a modular component in a broader AI-powered digital care ecosystem.
+
 
 ### Contributors
 
@@ -56,10 +61,8 @@ It includes:
 
 |              | How it was created                                                  | Conditions of use                        |
 |--------------|----------------------------------------------------------------------|------------------------------------------|
-| ai-medical-dataset | Curated by ruslanmv, 21.2M QA pairs on Hugging Face            | CreativeML Open RAIL-M License           |
 | MedQuAD      | NIH/NLM QA dataset                                                  | CC BY 4.0                                |
-| GPT-2        | Pretrained on WebText by OpenAI                                     | Open for research and commercial use     |
-| LLaMa 3.1 8B | Meta's open LLM fine-tuned with Ray + DDP on medical dataset        | Research use under Meta license          |
+| TinyLLaMa 1.1M | Meta's open LLM fine-tuned with Ray + DDP on medical dataset        | Research use under Meta license          |
 
 ### Summary of infrastructure requirements
 
