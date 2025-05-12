@@ -3,7 +3,7 @@
 
 This repository contains the full MLOps deployment of **Dr. Dialog**, an evidence-based healthcare chatbot system. The system is built and deployed following the ML SysOps methodology using Chameleon Cloud infrastructure and a Continuous Delivery pipeline with ArgoCD and Kubernetes.
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 Vamsi/
@@ -21,7 +21,7 @@ Vamsi/
 
 ---
 
-## 🛠 Infrastructure Provisioning (Terraform)
+## Infrastructure Provisioning (Terraform)
 
 > **Location**: [`provision.ipynb`](./Vamsi/provision.ipynb)
 
@@ -38,7 +38,7 @@ Run the notebook cell-by-cell to provision your infrastructure.
 
 ---
 
-## ☸️ Kubernetes Cluster Setup (Kubespray + Ansible)
+## Kubernetes Cluster Setup (Kubespray + Ansible)
 
 > **Location**: [`ansible/k8s/`](./Vamsi/ansible/k8s/)
 
@@ -58,7 +58,7 @@ We use Kubespray (locked to commit `184b15f`) to bootstrap a production-ready Ku
 
 ---
 
-## 🚀 Application Deployment with ArgoCD
+## Application Deployment with ArgoCD
 
 > **Playbooks**: [`ansible/argocd/*.yml`](./Vamsi/ansible/argocd/)
 
@@ -75,7 +75,7 @@ ansible-playbook -i inventory.yml argocd_add_platform.yml
 
 ---
 
-## 🤖 Application Code and Deployment
+## Application Code and Deployment
 
 > **Manifests**:
 > - [`dr-dialog-app.yaml`](./Vamsi/dr-dialog-app.yaml)
@@ -90,7 +90,7 @@ kubectl apply -f service.yaml
 
 ---
 
-## 🔁 Full Deployment Script
+## Full Deployment Script
 
 > **Location**: [`deploy.sh`](./Vamsi/deploy.sh)
 
@@ -107,7 +107,7 @@ chmod +x deploy.sh
 
 ---
 
-## 🧪 How to Run the Project on Chameleon Cloud
+## How to Run the Project on Chameleon Cloud
 
 1. Log into your JupyterHub space at [jupyter.chameleoncloud.org](https://jupyter.chameleoncloud.org)
 2. Clone this repo:
@@ -130,12 +130,9 @@ chmod +x deploy.sh
 
 ---
 
-## ✅ Final Notes
+## Final Notes
 
 - Ensure all nodes are reachable via their private IPs inside the cluster.
 - If ArgoCD UI is exposed, you can monitor deployments from the browser.
 - All YAMLs and playbooks are idempotent and can be re-run.
 
----
-
-**Maintainer**: [Vamsi Udayakumar Jonnakuti](mailto:vj2280@nyu.edu)
