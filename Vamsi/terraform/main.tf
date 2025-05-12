@@ -1,76 +1,49 @@
-terraform {
-  required_providers {
-    openstack = {
-      source  = "terraform-provider-openstack/openstack"
-      version = ">= 3.0.0"
-    }
+resource "openstack_networking_port_v2" "private_net_ports" {
+  for_each              = var.nodes
+  name                  = "port-${each.key}"
+  network_id            = data.openstack_networking_network_v2.private_net.id
+  port_security_enabled = false
+
+  fixed_ip {
+    subnet_id  = data.openstack_networking_subnet_v2.private_subnet.id
+    ip_address = each.value
   }
 }
 
-provider "openstack" {
-  auth_url                    = var.auth_url
-  region                      = var.region
-  application_credential_id   = var.application_credential_id
-  application_credential_secret = var.application_credential_secret
+resource "openstack_networking_port_v2" "sharednet2_ports" {
+  for_each   = var.nodes
+  name       = "sharednet2-${each.key}"
+  network_id = data.openstack_networking_network_v2.sharednet2.id
+  security_group_ids = [
+    data.openstack_networking_secgroup_v2.allow_ssh.id,
+    data.openstack_networking_secgroup_v2.allow_9001.id,
+    data.openstack_networking_secgroup_v2.allow_8000.id,
+    data.openstack_networking_secgroup_v2.allow_8080.id,
+    data.openstack_networking_secgroup_v2.allow_8081.id,
+    data.openstack_networking_secgroup_v2.allow_http_80.id,
+    data.openstack_networking_secgroup_v2.allow_9090.id
+  ]
 }
 
-# Create private network
-resource "openstack_networking_network_v2" "private_network" {
-  name           = var.network_name
-  admin_state_up = true
-}
+resource "openstack_compute_instance_v2" "nodes" {
+  for_each = var.nodes
 
-# Create subnet
-resource "openstack_networking_subnet_v2" "private_subnet" {
-  name            = "private_subnet_project17"
-  network_id      = openstack_networking_network_v2.private_network.id
-  cidr            = "192.168.17.0/24"
-  ip_version      = 4
-  gateway_ip      = "192.168.17.1"
-  dns_nameservers = ["8.8.8.8", "1.1.1.1"]
-}
-
-# Keypair
-resource "openstack_compute_keypair_v2" "keypair" {
-  name       = var.keypair_name
-  public_key = file(var.public_key_path)
-}
-
-# Dedicated port for controller
-resource "openstack_networking_port_v2" "controller_port" {
-  name       = "controller-port-project17"
-  network_id = openstack_networking_network_v2.private_network.id
-}
-
-# Floating IP for controller
-resource "openstack_networking_floatingip_v2" "controller_fip" {
-  pool    = "public"
-  port_id = openstack_networking_port_v2.controller_port.id
-}
-
-# Controller node
-resource "openstack_compute_instance_v2" "controller" {
-  name            = "controller-project17"
-  image_name      = var.image_name
-  flavor_name     = var.flavor_name
-  key_pair        = openstack_compute_keypair_v2.keypair.name
-  security_groups = ["default"]
+  name        = each.key
+  image_name  = "CC-Ubuntu24.04"
+  flavor_name = "m1.medium"
+  key_pair    = var.key
 
   network {
-    port = openstack_networking_port_v2.controller_port.id
+    port = openstack_networking_port_v2.sharednet2_ports[each.key].id
   }
-}
-
-# Worker nodes (on private network)
-resource "openstack_compute_instance_v2" "worker" {
-  count           = 2
-  name            = "worker${count.index}-project17"
-  image_name      = var.image_name
-  flavor_name     = var.flavor_name
-  key_pair        = openstack_compute_keypair_v2.keypair.name
-  security_groups = ["default"]
 
   network {
-    uuid = openstack_networking_network_v2.private_network.id
+    port = openstack_networking_port_v2.private_net_ports[each.key].id
   }
+
+  user_data = <<-EOF
+    #! /bin/bash
+    echo "127.0.1.1 ${each.key}" >> /etc/hosts
+    su cc -c /usr/local/bin/cc-load-public-keys
+  EOF
 }

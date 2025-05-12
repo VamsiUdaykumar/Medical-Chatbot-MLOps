@@ -1,22 +1,20 @@
-variable "auth_url" {
-  default = "https://kvm.tacc.chameleoncloud.org:5000/v3"
+variable "suffix" {
+  description = "Suffix for resource names (use net ID)"
+  type        = string
+  default     = "project17"
 }
 
-variable "region" {
-  default = "KVM@TACC"
+variable "key" {
+  description = "Name of key pair"
+  type        = string
+  default     = "id_rsa_new"
 }
 
-variable "application_credential_id" {}
-variable "application_credential_secret" {}
-
-variable "keypair_name" {}
-variable "public_key_path" {}
-variable "network_name" {
-  default = "private_net_project17"
-}
-variable "image_name" {
-  default = "CC-Ubuntu24.04"
-}
-variable "flavor_name" {
-  default = "m1.medium"
+variable "nodes" {
+  type = map(string)
+  default = {
+    "controller-project17" = "192.168.17.25"
+    "worker1-project17"    = "192.168.17.26"
+    "worker0-project17"    = "192.168.17.27"
+  }
 }
