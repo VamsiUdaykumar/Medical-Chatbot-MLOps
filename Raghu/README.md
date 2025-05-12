@@ -55,7 +55,7 @@ We fine-tune `TinyLLaMA-1.1B` on MedQuaD using LoRA, 16-bit precision, Ray + Lig
 
 ## 🧪 MLflow Experiment Tracking
 
-![MLflow Run Table](attachment:mlflow.png)
+![MLflow Run Table](mlflow.png)
 
 - Tracked metrics: `train_loss`, `lr`, `step`, `time/iter`
 - Parameters: `num_gpus`, `gradient_accum`, `mixed_precision`
