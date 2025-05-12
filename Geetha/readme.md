@@ -1,5 +1,5 @@
 
-# Medical Chatbot MLOps Project: README (my Contributions)
+# Medical Chatbot MLOps Project (my Contributions)
 
 This document summarizes my contributions to the Medical Chatbot MLOps project, in alignment with the course requirements.
 
