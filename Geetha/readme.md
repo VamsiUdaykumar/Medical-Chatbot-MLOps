@@ -22,18 +22,23 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
     - `/mnt/object/artifacts/minio_data/` – Stores all MLflow artifacts, including metrics and model checkpoints.
     - `/mnt/object/artifacts/medical-qa-model/` – Stores only the best model checkpoints selected from training.
 
+  ![Model Artifacts](images/model_artifacts.png)
+  ![MinIO MLflow Artifacts](images/minio_artifacts.png)
+  ![MinIO File Browser](images/minio_browser.png)
+
 - **Block Storage (KVM @ TACC)**:
 
   - Provisioned volume and mounted on `/mnt/block`.
-
   - **Service Using It**: MLflow experiment tracking stores the backend database and artifact metadata here.
-
   - **Scripts Provided**:
-    - `scripts/block_mount.sh` – Mounts the block volume.
-    - `scripts/object_mount.sh` – Mounts the object store.
-    - `scripts/kvm_setup.ipynb` – Verifies persistent volume setup and integration with services.
+    - `scripts/block_mount.sh`
+    - `scripts/object_mount.sh`
+    - `scripts/kvm_setup.ipynb`
+
+  ![Block Storage Mounted](images/block_storage.png)
 
 - **MLflow UI**: [http://129.114.25.221:8000/](http://129.114.25.221:8000/)
+  ![MLflow UI](images/mlflow_ui.png)
 
 ---
 
@@ -46,22 +51,14 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 - **Dataset Used**: `lavita/MedQuAD` from HuggingFace
 
 - **ETL Pipeline (Docker-based)**:
+  - Extract, Transform, Load
+  - Tools: Python, Docker Compose, Bash
 
-  - **Extract**:
-    - Download dataset via `datasets.load_dataset("lavita/MedQuAD")`
-    - Saved in Arrow format in `/data/raw-dataset`
-  - **Transform**:
-    - Filtered columns: `synonyms`, `question_type`, `question`, `question_focus`, `answer`
-    - Removed rows with missing/empty `question` or `answer`
-    - Split into `training`, `validation`, and `production` (set1, set2) via deterministic random sampling
-  - **Load**:
-    - Output stored into `/mnt/object/data/dataset-split/`
-  - **Tools**: Python, Docker Compose, Bash
-  - **Files Provided**:
-    - `data_preprocessing.py` – Applies transformation and splitting logic.
-    - `docker/docker-compose-etl.yaml` – Containerized ETL setup.
-    - `scripts/run_etl.sh` – Automates launching the ETL container.
-    - `requirements.txt`, `Dockerfile` – Environment setup for reproducible ETL pipeline.
+- **Files Provided**:
+  - `data_preprocessing.py`
+  - `docker/docker-compose-etl.yaml`
+  - `scripts/run_etl.sh`
+  - `requirements.txt`, `Dockerfile`
 
 - **Data Lineage & Sample**:
   ```json
@@ -71,6 +68,9 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
   }
   ```
 
+  ![Object Store Data View](images/object_data.png)
+  ![Dataset Split Structure](images/dataset_split.png)
+
 ---
 
 ## Data Pipeline (Retraining)
@@ -79,55 +79,32 @@ This document summarizes my contributions to the Medical Chatbot MLOps project, 
 
 ### My Implementation:
 
-- **Directory Structure:**
+- Directory: `/mnt/object/data/production/`
+- Pipeline Flow: Extract → Transform → Archive
+- Scripts: `retraining_data_transform.py`, `docker-compose-retraining-etl.yaml`, `run_retraining_etl.sh`
 
-  ```
-  /mnt/object/data/production/
-  ├── retraining_data_raw/
-  ├── retraining_data_transformed/
-  ├── production_data_archive/
-  ```
-
-- **Pipeline Flow**:
-  - Extracts new `.json` files from raw directory
-  - Cleans and transforms valid entries
-  - Saves versioned output and archives raw files
-
-- **Scripts Provided**:
-  - `retraining_data_transform.py`
-  - `docker-compose-retraining-etl.yaml`
-  - `run_retraining_etl.sh`
+  ![Production Folders](images/production_pipeline.png)
 
 ---
 
 ## Online Data & Simulation
 
-**Requirement:** Simulate online data streaming using real dataset to mimic real-world inference requests.
-
-### My Implementation:
-
 - **Script**: `simulate_online_data.py`
-- Sends QA requests every few seconds and logs model responses
-- Mimics realistic request timing and content
+- Sends simulated QA requests for inference and stores responses for retraining
 
 ---
 
 ## Interactive Data Dashboard
 
-**Requirement:** Build a dashboard to visualize and gain insights into the offline and production data.
-
-### My Implementation:
-
 - **Tool**: Streamlit + Plotly
 - **Dashboard UI**: [http://129.114.25.221:8501/](http://129.114.25.221:8501/)
-- **Script**: `dashboard.py`
-- **Files**:
-  - `docker/docker-compose-dashboard.yaml`
-  - `requirements.txt`, `Dockerfile`
+- **Files**: `dashboard.py`, `docker-compose-dashboard.yaml`
+
+  ![Data Dashboard](images/data_dashboard.png)
 
 ---
 
-## GitHub Repository Structure (geetha Folder)
+## GitHub Repository Structure
 
 ```
 geetha/
