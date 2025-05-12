@@ -194,4 +194,4 @@ For our use case, a conventional NLP accuracy metric like BLEU or ROUGE is less 
 [View detailed training results/instructions](./Raghu/README.md)
 
 # Data Pipeline Details (Geetha)
-[View detailed data pipeline details](./Geetha/README.md)
+[View detailed data pipeline details](./Geetha/readme.md)
