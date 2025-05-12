@@ -23,7 +23,7 @@ Vamsi/
 
 ## Infrastructure Provisioning (Terraform)
 
-> **Location**: [`provision.ipynb`](./Vamsi/provision.ipynb)
+> **Location**: [`provision.ipynb`](provision.ipynb)
 
 We use Terraform from a Jupyter notebook on Chameleon to provision:
 - 1 controller node (with floating IP)
@@ -40,7 +40,7 @@ Run the notebook cell-by-cell to provision your infrastructure.
 
 ## Kubernetes Cluster Setup (Kubespray + Ansible)
 
-> **Location**: [`ansible/k8s/`](./Vamsi/ansible/k8s/)
+> **Location**: [`ansible/k8s/`](./ansible/k8s/)
 
 We use Kubespray (locked to commit `184b15f`) to bootstrap a production-ready Kubernetes cluster.
 
@@ -60,7 +60,7 @@ We use Kubespray (locked to commit `184b15f`) to bootstrap a production-ready Ku
 
 ## Application Deployment with ArgoCD
 
-> **Playbooks**: [`ansible/argocd/*.yml`](./Vamsi/ansible/argocd/)
+> **Playbooks**: [`ansible/argocd/*.yml`](./ansible/argocd/)
 
 The deployment leverages ArgoCD for GitOps-based continuous delivery. Each environment (init, staging, prod, canary) is defined with a separate playbook:
 
@@ -78,8 +78,8 @@ ansible-playbook -i inventory.yml argocd_add_platform.yml
 ## Application Code and Deployment
 
 > **Manifests**:
-> - [`dr-dialog-app.yaml`](./Vamsi/dr-dialog-app.yaml)
-> - [`service.yaml`](./Vamsi/service.yaml)
+> - [`dr-dialog-app.yaml`](./dr-dialog-app.yaml)
+> - [`service.yaml`](./service.yaml)
 
 These YAML files define the chatbot service, including deployment and NodePort/ClusterIP services. You can apply them manually via `kubectl` or ArgoCD will manage them automatically.
 
@@ -92,7 +92,7 @@ kubectl apply -f service.yaml
 
 ## Full Deployment Script
 
-> **Location**: [`deploy.sh`](./Vamsi/deploy.sh)
+> **Location**: [`deploy.sh`](./deploy.sh)
 
 Automates:
 - ArgoCD app sync
