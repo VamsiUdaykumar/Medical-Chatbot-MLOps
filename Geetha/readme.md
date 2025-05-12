@@ -18,7 +18,7 @@ To provision and prepare the environment:
     - MinIO artifact storage
     - Streamlit dashboard
 
-This notebook acts as the single entry point for data infrastructure setup and service deployment.
+This notebook acts as the single entry point for data pipelines infrastructure setup and service deployment.
 
 ## Persistent Storage
 
