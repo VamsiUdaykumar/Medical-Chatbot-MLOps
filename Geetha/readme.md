@@ -4,6 +4,21 @@
 This document summarizes my contributions to the Medical Chatbot MLOps project, in alignment with the course requirements.
 
 ---
+## Instructions to Run (`kvm_setup.ipynb`)
+
+To provision and prepare the environment:
+
+- Run all cells in [`kvm_setup.ipynb`](https://github.com/phoenix1881/Medical-Chatbot-MLOps/blob/main/Geetha/scripts/kvm_setup.ipynb)
+  - Provisions and mounts:
+    - **Block storage** at `/mnt/block` (used for MLflow metadata)
+    - **Object storage** at `/mnt/object` (used for datasets and models)
+  - Verifies mount points and confirms volume readiness
+  - Launches Docker Compose services for:
+    - MLflow tracking
+    - MinIO artifact storage
+    - Streamlit dashboard
+
+This notebook acts as the single entry point for data infrastructure setup and service deployment.
 
 ## Persistent Storage
 
