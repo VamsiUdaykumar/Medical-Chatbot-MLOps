@@ -41,7 +41,7 @@ This module can be embedded seamlessly into MyChart and the Mayo Clinic App as a
 | All team members                | Project idea, value proposition, system design          |                                    |
 | Raghu V Hemadri                 | Model Training & Infrastructure (Units 4 & 5)           | https://github.com/phoenix1881/Medical-Chatbot-MLOps/commits?author=RaghuHemadri |
 | Tejdeep Chippa                  | Model Serving & Monitoring (Units 6 & 7)                | https://github.com/phoenix1881/Medical-Chatbot-MLOps/commit/761a99f4e7a74f7cc2e48bf46b9fbd947aa0eabf |
-| Geetha K Guruju              | Data Pipeline (Unit 8)                                  |                                    |
+| Geetha K Guruju              | Data Pipeline (Unit 8)                                  |                                    | https://github.com/phoenix1881/Medical-Chatbot-MLOps/commits?author=geethaguruju
 | Vamsi UK Jonnakuti                | CI/CD, Deployment, Infra-as-Code (Unit 3)               |                                    |
 
 ### System diagram
