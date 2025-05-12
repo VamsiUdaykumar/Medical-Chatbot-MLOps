@@ -66,12 +66,13 @@ It includes:
 
 ### Summary of infrastructure requirements
 
-| Requirement     | How many/when                         | Justification                                         |
+| Requirement     | How many/when                          | Justification                                         |
 |-----------------|----------------------------------------|-------------------------------------------------------|
 | `m1.medium` VMs | 2 for entire project duration          | Host API, dashboard, and monitoring                   |
-| `gpu_a100`      | 1 node × 6 hrs/week for fine-tuning    | Train large-scale LLM efficiently                    |
+| `gpu_a100`      | 1 node × 6 hrs/week for fine-tuning    | Train large-scale LLM efficiently                     |
 | Floating IPs    | 1 for entire project duration          | Enable public access to services                      |
-| Block storage   | 20 GB                                  | Dataset storage, logs, model artifacts                |
+| Object storage  | 30 GB                                  | Dataset storage, model artifacts, production data     |
+| Block storage   | 1 GB                                   | MLflow logs, artifacts and tracking data              |
 | MLflow Server   | 1 container                            | Experiment and performance tracking                   |
 
 ### Detailed design plan
