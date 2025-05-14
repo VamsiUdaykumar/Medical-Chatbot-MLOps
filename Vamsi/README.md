@@ -3,6 +3,8 @@
 
 This repository contains the full MLOps deployment of **Dr. Dialog**, an evidence-based healthcare chatbot system. The system is built and deployed following the ML SysOps methodology using Chameleon Cloud infrastructure and a Continuous Delivery pipeline with ArgoCD and Kubernetes.
 
+![project_17](https://github.com/user-attachments/assets/f7f0e04d-a768-41c5-8ad9-f300204ec9f1)
+
 ## Repository Structure
 
 ```
